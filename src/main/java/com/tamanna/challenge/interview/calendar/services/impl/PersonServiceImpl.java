@@ -109,7 +109,6 @@ public class PersonServiceImpl implements PersonService {
                 person.setId(id);
 
                 validateAndFormatPhoneNumber(person);
-
                 validateEmailUniqueness(person);
 
                 personOpt = Optional.of(this.personRepository.save(person));

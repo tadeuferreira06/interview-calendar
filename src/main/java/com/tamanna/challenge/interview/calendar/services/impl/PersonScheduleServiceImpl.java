@@ -26,7 +26,7 @@ public class PersonScheduleServiceImpl implements PersonScheduleService {
     private final ScheduleRepository scheduleRepository;
 
     @Override
-    public List<Schedule> addSchedule(PersonType personType, long id, Schedule schedule) throws ServiceException {
+    public Optional<Schedule> addSchedule(PersonType personType, long id, Schedule schedule) throws ServiceException {
         log.debug("Start addSchedule {} to Person PersonType: {}, Id: {}", schedule, personType, id);
         boolean success = true;
         try {
@@ -34,23 +34,19 @@ public class PersonScheduleServiceImpl implements PersonScheduleService {
             Optional<Person> personOpt = personRepository.findByIdAndPersonType(id, personType);
             if (personOpt.isEmpty()) {
                 log.warn("Unable to find Person PersonType: {}, Id: {} ", personType, id);
-                return new ArrayList<>();
+                return Optional.empty();
             }
             Person person = personOpt.get();
 
-            //check for uniqueness
-            if (scheduleRepository.findByPersonIdAndDayAndHour(person.getId(), schedule.getDay(), schedule.getHour()).isPresent()) {
-                throw new IllegalArgumentException("Schedule already exists");
-            }
+            validateScheduleUniqueness(id, schedule);
 
             if (person.getAvailableSchedules() == null) {
                 person.setAvailableSchedules(new ArrayList<>());
             }
 
             schedule.setPerson(person);
-            person.getAvailableSchedules().add(schedule);
 
-            return Optional.of(personRepository.save(person)).map(Person::getAvailableSchedules).orElseGet(ArrayList::new);
+            return Optional.of(scheduleRepository.save(schedule));
         } catch (IllegalArgumentException e) {
             success = false;
             log.error("Unable to addSchedule {} to Person PersonType: {}, Id: {}, Illegal Argument, Exception: ", schedule, personType, id, e);
@@ -70,6 +66,10 @@ public class PersonScheduleServiceImpl implements PersonScheduleService {
         boolean success = true;
         try {
             return scheduleRepository.findByIdAndPersonIdAndPersonType(scheduleId, id, personType);
+        } catch (IllegalArgumentException e) {
+            success = false;
+            log.error("Unable to getSchedule ScheduleId: {} from Person PersonType: {}, Id: {}, Illegal Argument, Exception: ", scheduleId, personType, id, e);
+            throw e;
         } catch (Exception e) {
             success = false;
             log.error("Unable to getSchedule ScheduleId: {} from Person PersonType: {}, Id: {}, Exception: ", scheduleId, personType, id, e);
@@ -86,10 +86,15 @@ public class PersonScheduleServiceImpl implements PersonScheduleService {
         try {
             Optional<Schedule> scheduleOpt = scheduleRepository.findByIdAndPersonIdAndPersonType(scheduleId, id, personType);
             if (scheduleOpt.isPresent()) {
-                schedule.setId(id);
+                schedule.setId(scheduleId);
+                validateScheduleUniqueness(id, schedule);
                 scheduleOpt = Optional.of(this.scheduleRepository.save(schedule));
             }
             return scheduleOpt;
+        } catch (IllegalArgumentException e) {
+            success = false;
+            log.error("Unable to updateSchedule ScheduleId: {}, Schedule:{} from Person PersonType: {}, Id: {}, Illegal Argument, Exception: ",  scheduleId, schedule, personType, id, e);
+            throw e;
         } catch (Exception e) {
             success = false;
             log.error("Unable to updateSchedule ScheduleId: {}, Schedule:{} from Person PersonType: {}, Id: {}, Exception: ", scheduleId, schedule, personType, id, e);
@@ -111,10 +116,26 @@ public class PersonScheduleServiceImpl implements PersonScheduleService {
             return scheduleOpt;
         } catch (Exception e) {
             success = false;
-            log.error("Unable to updateSchedule ScheduleId: {} from Person PersonType: {}, Id: {}, Exception: ", scheduleId, personType, id, e);
+            log.error("Unable to deleteSchedule ScheduleId: {} from Person PersonType: {}, Id: {}, Exception: ", scheduleId, personType, id, e);
             throw new ServiceException("Error updateSchedule", e);
         } finally {
-            log.debug("Finished updateSchedule ScheduleId: {} from Person PersonType: {}, Id: {}, success: {}", scheduleId, personType, id, success);
+            log.debug("Finished deleteSchedule ScheduleId: {} from Person PersonType: {}, Id: {}, success: {}", scheduleId, personType, id, success);
+        }
+    }
+
+    private void validateScheduleUniqueness(long personId, Schedule schedule) {
+        Optional<Schedule> existingScheduleOpt = scheduleRepository.findByPersonIdAndDayAndHour(personId, schedule.getDay(), schedule.getHour());
+
+        boolean invalid = existingScheduleOpt.isPresent();
+        if (schedule.getId() > 0) {
+            invalid = existingScheduleOpt
+                    .map(Schedule::getId)
+                    .filter(id -> schedule.getId() != id)
+                    .isPresent();
+        }
+
+        if (invalid) {
+            throw new IllegalArgumentException("Schedule already exists");
         }
     }
 }

@@ -40,7 +40,7 @@ public class Schedule {
     @Column(name = "update_date")
     private LocalDateTime updateDate;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn
     private Person person;
 }

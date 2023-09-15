@@ -37,12 +37,12 @@ public class PersonScheduleController {
     private final PersonService personService;
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<ScheduleDTO>> createSchedule(@PathVariable(PERSON_TYPE_PATH_PARAM) PersonType personType, @Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id, @RequestBody ScheduleInfoDTO scheduleInfoDTO) throws ServiceException {
+    public ResponseEntity<ScheduleDTO> createSchedule(@PathVariable(PERSON_TYPE_PATH_PARAM) PersonType personType, @Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id, @RequestBody ScheduleInfoDTO scheduleInfoDTO) throws ServiceException {
         Schedule schedule = this.mapDTOEntity(scheduleInfoDTO);
 
-        List<Schedule> scheduleList = personScheduleService.addSchedule(personType, id, schedule);
+        Optional<Schedule> scheduleOpt = personScheduleService.addSchedule(personType, id, schedule);
 
-        return scheduleList.isEmpty() ? new ResponseEntity<>(HttpStatus.NOT_FOUND) : new ResponseEntity<>(this.mapListEntityDTO(scheduleList), HttpStatus.OK);
+        return handleOptResponse(scheduleOpt);
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)

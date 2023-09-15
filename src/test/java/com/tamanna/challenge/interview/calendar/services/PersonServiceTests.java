@@ -9,10 +9,11 @@ import com.tamanna.challenge.interview.calendar.services.impl.PersonServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
@@ -20,6 +21,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static com.tamanna.challenge.interview.calendar.DummyDataUtils.getNewPersonCandidate;
+import static com.tamanna.challenge.interview.calendar.DummyDataUtils.getNewPersonInterviewer;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
@@ -27,7 +30,6 @@ import static org.mockito.ArgumentMatchers.eq;
  * @author tlferreira
  */
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 class PersonServiceTests {
     @Spy
     private PhoneNumberValidationKeys phoneNumberValidationKeys;
@@ -51,7 +53,7 @@ class PersonServiceTests {
         Person person = getNewPersonInterviewer();
 
         //returns the same object for simplicity’s sake
-        Mockito.when(personRepository.findByPhoneNumber(person.getPhoneNumber())).thenReturn(Optional.of(person));
+        Mockito.when(personRepository.findByPhoneNumber(eq(person.getPhoneNumber()))).thenReturn(Optional.of(person));
 
         Assertions.assertThrows(IllegalArgumentException.class, () -> personService.createPerson(person));
     }
@@ -60,9 +62,9 @@ class PersonServiceTests {
     void createPersonTest_EmailAlreadyExists() throws ServiceException {
         Person person = getNewPersonInterviewer();
 
-        Mockito.when(personRepository.findByPhoneNumber(person.getPhoneNumber())).thenReturn(Optional.empty());
+        Mockito.when(personRepository.findByPhoneNumber(eq(person.getPhoneNumber()))).thenReturn(Optional.empty());
         //returns the same object for simplicity’s sake
-        Mockito.when(personRepository.findByEmail(person.getEmail())).thenReturn(Optional.of(person));
+        Mockito.when(personRepository.findByEmail(eq(person.getEmail()))).thenReturn(Optional.of(person));
 
         Assertions.assertThrows(IllegalArgumentException.class, () -> personService.createPerson(person));
     }
@@ -72,9 +74,9 @@ class PersonServiceTests {
         Person person = getNewPersonInterviewer();
 
         //returns the same object
-        Mockito.when(personRepository.findByPhoneNumber(person.getPhoneNumber())).thenReturn(Optional.empty());
-        Mockito.when(personRepository.findByEmail(person.getEmail())).thenReturn(Optional.empty());
-        Mockito.when(personRepository.save(person)).thenReturn(person);
+        Mockito.when(personRepository.findByPhoneNumber(eq(person.getPhoneNumber()))).thenReturn(Optional.empty());
+        Mockito.when(personRepository.findByEmail(eq(person.getEmail()))).thenReturn(Optional.empty());
+        Mockito.when(personRepository.save(eq(person))).thenReturn(person);
 
         Assertions.assertNotNull(personService.createPerson(person));
     }
@@ -89,9 +91,9 @@ class PersonServiceTests {
         Pageable pageable02 = PageRequest.of(0, 2);
 
         //returns the same object
-        Mockito.when(personRepository.findAllByPersonType(PersonType.INTERVIEWER, pageable01)).thenReturn(List.of(personA));
-        Mockito.when(personRepository.findAllByPersonType(PersonType.INTERVIEWER, pageable11)).thenReturn(List.of(personA2));
-        Mockito.when(personRepository.findAllByPersonType(PersonType.INTERVIEWER, pageable02)).thenReturn(List.of(personA, personA2));
+        Mockito.when(personRepository.findAllByPersonType(eq(PersonType.INTERVIEWER), eq(pageable01))).thenReturn(List.of(personA));
+        Mockito.when(personRepository.findAllByPersonType(eq(PersonType.INTERVIEWER), eq(pageable11))).thenReturn(List.of(personA2));
+        Mockito.when(personRepository.findAllByPersonType(eq(PersonType.INTERVIEWER), eq(pageable02))).thenReturn(List.of(personA, personA2));
 
         List<Person> interviewerList = personService.findAllPageable(PersonType.INTERVIEWER, 0, 1);
         Assertions.assertNotNull(interviewerList);
@@ -120,8 +122,8 @@ class PersonServiceTests {
         Person personB = getNewPersonCandidate();
 
         //returns the same object
-        Mockito.when(personRepository.findAllByPersonType(PersonType.INTERVIEWER)).thenReturn(List.of(personA, personA2));
-        Mockito.when(personRepository.findAllByPersonType(PersonType.CANDIDATE)).thenReturn(List.of(personB));
+        Mockito.when(personRepository.findAllByPersonType(eq(PersonType.INTERVIEWER))).thenReturn(List.of(personA, personA2));
+        Mockito.when(personRepository.findAllByPersonType(eq(PersonType.CANDIDATE))).thenReturn(List.of(personB));
 
         List<Person> interviewerList = personService.findAll(PersonType.INTERVIEWER);
 
@@ -141,10 +143,29 @@ class PersonServiceTests {
         Assertions.assertFalse(candidateList.contains(personA2));
         Assertions.assertTrue(candidateList.contains(personB));
 
-        Mockito.when(personRepository.findAllByPersonType(PersonType.CANDIDATE)).thenReturn(Collections.emptyList());
+        Mockito.when(personRepository.findAllByPersonType(eq(PersonType.CANDIDATE))).thenReturn(Collections.emptyList());
         List<Person> candidateList2 = personService.findAll(PersonType.CANDIDATE);
         Assertions.assertNotNull(candidateList2);
         Assertions.assertTrue(candidateList2.isEmpty());
+    }
+
+    @Test
+    void findPersonTest_NotFound() throws ServiceException {
+        Person personA = getNewPersonInterviewer(1L);
+        Mockito.when(personRepository.findByIdAndPersonType(eq(personA.getId()), eq(personA.getPersonType()))).thenReturn(Optional.empty());
+
+        Optional<Person> personOpt = personService.findById(personA.getPersonType(), personA.getId());
+        Assertions.assertTrue(personOpt.isEmpty());
+    }
+
+    @Test
+    void findPersonTest_Success() throws ServiceException {
+        Person personA = getNewPersonInterviewer(1L);
+
+        Mockito.when(personRepository.findByIdAndPersonType(eq(personA.getId()), eq(personA.getPersonType()))).thenReturn(Optional.of(personA));
+
+        Optional<Person> personOpt = personService.findById(personA.getPersonType(), personA.getId());
+        Assertions.assertTrue(personOpt.isPresent());
     }
 
     @Test
@@ -152,7 +173,7 @@ class PersonServiceTests {
         Person personA = getNewPersonInterviewer(1L);
         Person personUpdate = getNewPersonInterviewer();
 
-        Mockito.when(personRepository.findByIdAndPersonType(personA.getId(), personA.getPersonType())).thenReturn(Optional.empty());
+        Mockito.when(personRepository.findByIdAndPersonType(eq(personA.getId()), eq(personA.getPersonType()))).thenReturn(Optional.empty());
 
         Optional<Person> personOpt = personService.update(personA.getId(), personUpdate);
         Assertions.assertTrue(personOpt.isEmpty());
@@ -164,7 +185,7 @@ class PersonServiceTests {
         Person personUpdate = getNewPersonInterviewer();
         personUpdate.setPersonType(PersonType.CANDIDATE);
 
-        Mockito.when(personRepository.findByIdAndPersonType(personA.getId(), personUpdate.getPersonType())).thenReturn(Optional.empty());
+        Mockito.when(personRepository.findByIdAndPersonType(eq(personA.getId()), eq(personUpdate.getPersonType()))).thenReturn(Optional.empty());
 
         Optional<Person> personOpt = personService.update(personA.getId(), personUpdate);
         Assertions.assertTrue(personOpt.isEmpty());
@@ -176,7 +197,7 @@ class PersonServiceTests {
         Person personUpdate = getNewPersonInterviewer();
         personUpdate.setPhoneNumber("123123");
 
-        Mockito.when(personRepository.findByIdAndPersonType(personA.getId(), personA.getPersonType())).thenReturn(Optional.of(personA));
+        Mockito.when(personRepository.findByIdAndPersonType(eq(personA.getId()), eq(personA.getPersonType()))).thenReturn(Optional.of(personA));
 
         Assertions.assertThrows(IllegalArgumentException.class, () -> personService.update(personA.getId(), personUpdate));
     }
@@ -189,8 +210,8 @@ class PersonServiceTests {
         Person personUpdate = getNewPersonInterviewer();
         personUpdate.setPhoneNumber(personB.getPhoneNumber());
 
-        Mockito.when(personRepository.findByIdAndPersonType(personA.getId(), personA.getPersonType())).thenReturn(Optional.of(personA));
-        Mockito.when(personRepository.findByPhoneNumber(personUpdate.getPhoneNumber())).thenReturn(Optional.of(personB));
+        Mockito.when(personRepository.findByIdAndPersonType(eq(personA.getId()), eq(personA.getPersonType()))).thenReturn(Optional.of(personA));
+        Mockito.when(personRepository.findByPhoneNumber(eq(personUpdate.getPhoneNumber()))).thenReturn(Optional.of(personB));
 
         Assertions.assertThrows(IllegalArgumentException.class, () -> personService.update(personA.getId(), personUpdate));
     }
@@ -203,23 +224,24 @@ class PersonServiceTests {
         Person personUpdate = getNewPersonInterviewer();
         personUpdate.setEmail(personB.getEmail());
 
-        Mockito.when(personRepository.findByIdAndPersonType(personA.getId(), personA.getPersonType())).thenReturn(Optional.of(personA));
+        Mockito.when(personRepository.findByIdAndPersonType(eq(personA.getId()), eq(personA.getPersonType()))).thenReturn(Optional.of(personA));
 
-        Mockito.when(personRepository.findByPhoneNumber(personUpdate.getPhoneNumber())).thenReturn(Optional.empty());
-        Mockito.when(personRepository.findByEmail(personUpdate.getEmail())).thenReturn(Optional.of(personB));
+        Mockito.when(personRepository.findByPhoneNumber(eq(personUpdate.getPhoneNumber()))).thenReturn(Optional.empty());
+        Mockito.when(personRepository.findByEmail(eq(personUpdate.getEmail()))).thenReturn(Optional.of(personB));
 
         Assertions.assertThrows(IllegalArgumentException.class, () -> personService.update(personA.getId(), personUpdate));
     }
 
     @Test
-    void updatePersonTest_Success() throws ServiceException {
+    void updatePersonTest_SuccessEmail() throws ServiceException {
         Person personA = getNewPersonInterviewer(1L);
         Person personUpdate = getNewPersonInterviewer();
         personUpdate.setEmail("ab@sapo.pt");
 
-        Mockito.when(personRepository.findByIdAndPersonType(personA.getId(), personA.getPersonType())).thenReturn(Optional.of(personA));
-        Mockito.when(personRepository.findByPhoneNumber(personUpdate.getPhoneNumber())).thenReturn(Optional.empty());
-        Mockito.when(personRepository.findByEmail(personUpdate.getEmail())).thenReturn(Optional.empty());
+        Mockito.when(personRepository.findByIdAndPersonType(eq(personA.getId()), eq(personA.getPersonType()))).thenReturn(Optional.of(personA));
+        //return self
+        Mockito.when(personRepository.findByPhoneNumber(eq(personUpdate.getPhoneNumber()))).thenReturn(Optional.of(personA));
+        Mockito.when(personRepository.findByEmail(eq(personUpdate.getEmail()))).thenReturn(Optional.empty());
 
         Mockito.when(personRepository.save(any())).thenAnswer(answer -> answer.getArgument(0));
 
@@ -236,9 +258,34 @@ class PersonServiceTests {
     }
 
     @Test
+    void updatePersonTest_SuccessPhoneNumber() throws ServiceException {
+        Person personA = getNewPersonInterviewer(1L);
+        Person personUpdate = getNewPersonInterviewer();
+        personUpdate.setPhoneNumber("+351-911-222-333");
+
+        Mockito.when(personRepository.findByIdAndPersonType(eq(personA.getId()), eq(personA.getPersonType()))).thenReturn(Optional.of(personA));
+        Mockito.when(personRepository.findByPhoneNumber(eq(personUpdate.getPhoneNumber()))).thenReturn(Optional.empty());
+        //return self
+        Mockito.when(personRepository.findByEmail(eq(personUpdate.getEmail()))).thenReturn(Optional.of(personA));
+
+        Mockito.when(personRepository.save(any())).thenAnswer(answer -> answer.getArgument(0));
+
+        Optional<Person> personUpdatedOpt = personService.update(personA.getId(), personUpdate);
+
+        Assertions.assertTrue(personUpdatedOpt.isPresent());
+        Person personUpdated = personUpdatedOpt.get();
+        Assertions.assertEquals(personA.getId(), personUpdated.getId());
+        Assertions.assertEquals(personA.getFirstName(), personUpdated.getFirstName());
+        Assertions.assertEquals(personA.getLastName(), personUpdated.getLastName());
+        Assertions.assertEquals(personA.getPersonType(), personUpdated.getPersonType());
+        Assertions.assertNotEquals(personA.getPhoneNumber(), personUpdated.getPhoneNumber());
+        Assertions.assertEquals(personA.getEmail(), personUpdated.getEmail());
+    }
+
+    @Test
     void deletePersonTest_NotFound() throws ServiceException {
         Person personA = getNewPersonInterviewer(1L);
-        Mockito.when(personRepository.findById(any())).thenReturn(Optional.empty());
+        Mockito.when(personRepository.findByIdAndPersonType(eq(personA.getId()), eq(personA.getPersonType()))).thenReturn(Optional.empty());
 
         Optional<Person> personOpt = personService.delete(personA.getPersonType(), personA.getId());
         Assertions.assertTrue(personOpt.isEmpty());
@@ -248,49 +295,9 @@ class PersonServiceTests {
     void deletePersonTest_Success() throws ServiceException {
         Person personA = getNewPersonInterviewer(1L);
 
-        Mockito.when(personRepository.findById(any())).thenReturn(Optional.of(personA));
-        Mockito.doNothing().when(personRepository).delete(eq(personA));
+        Mockito.when(personRepository.findByIdAndPersonType(eq(personA.getId()), eq(personA.getPersonType()))).thenReturn(Optional.of(personA));
 
         Optional<Person> personOpt = personService.delete(personA.getPersonType(), personA.getId());
-        Assertions.assertTrue(personOpt.isEmpty());
-    }
-
-    private Person getNewPersonInterviewer() {
-        return getNewPersonInterviewer(null);
-    }
-
-    private Person getNewPersonInterviewer(Long id) {
-        Person person = new Person();
-
-        if(id != null){
-            person.setId(id);
-        }
-
-        person.setFirstName("Albino");
-        person.setLastName("Silva");
-        person.setEmail("as@mail.com");
-        person.setPhoneNumber("+351-244-000-000");
-        person.setPersonType(PersonType.INTERVIEWER);
-
-        return person;
-    }
-
-    private Person getNewPersonCandidate() {
-        return getNewPersonCandidate(null);
-    }
-
-    private Person getNewPersonCandidate(Long id) {
-        Person person = new Person();
-
-        if(id != null){
-            person.setId(id);
-        }
-
-        person.setFirstName("José");
-        person.setLastName("Almeida");
-        person.setEmail("ja@mail.com");
-        person.setPhoneNumber("+351-244-000-001");
-        person.setPersonType(PersonType.CANDIDATE);
-        return person;
+        Assertions.assertTrue(personOpt.isPresent());
     }
 }

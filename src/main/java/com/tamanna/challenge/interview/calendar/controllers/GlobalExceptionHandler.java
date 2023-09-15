@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 /**
  * @author tlferreira
  */
-@ControllerAdvice(assignableTypes = {PersonController.class})
+@ControllerAdvice(assignableTypes = {PersonController.class, PersonScheduleController.class})
 @Component
 @Log4j2
 public class GlobalExceptionHandler {

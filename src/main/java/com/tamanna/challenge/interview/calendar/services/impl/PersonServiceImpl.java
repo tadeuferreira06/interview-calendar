@@ -34,15 +34,7 @@ public class PersonServiceImpl implements PersonService {
         try {
             validateAndFormatPhoneNumber(person);
 
-            //check for number uniqueness
-            if (personRepository.findByPhoneNumber(person.getPhoneNumber()).isPresent()) {
-                throw new IllegalArgumentException("Phone number already in use");
-            }
-
-            //check for email uniqueness
-            if (personRepository.findByEmail(person.getEmail()).isPresent()) {
-                throw new IllegalArgumentException("Email address already in use");
-            }
+            validateEmailUniqueness(person);
 
             return personRepository.save(person);
         } catch (IllegalArgumentException e) {
@@ -112,12 +104,21 @@ public class PersonServiceImpl implements PersonService {
         log.debug("Start updatePerson Id: {}, Person: {}", id, person);
         boolean success = true;
         try {
-            Optional<Person> personOpt = this.personRepository.findById(id);
+            Optional<Person> personOpt = this.personRepository.findByIdAndPersonType(id, person.getPersonType());
             if (personOpt.isPresent()) {
                 person.setId(id);
+
+                validateAndFormatPhoneNumber(person);
+
+                validateEmailUniqueness(person);
+
                 personOpt = Optional.of(this.personRepository.save(person));
             }
             return personOpt;
+        } catch (IllegalArgumentException e) {
+            success = false;
+            log.error("Unable to updatePerson Id: {}, Person: {}, Illegal Argument, Exception: ", id, person, e);
+            throw e;
         } catch (Exception e) {
             success = false;
             log.error("Unable to updatePerson Id: {}, Person: {}, Exception: ", id, person, e);
@@ -132,7 +133,7 @@ public class PersonServiceImpl implements PersonService {
         log.debug("Start deletePerson PersonType: {}, Id: {}", personType, id);
         boolean success = true;
         try {
-            Optional<Person> personOpt = this.personRepository.findById(id);
+            Optional<Person> personOpt = this.personRepository.findByIdAndPersonType(id, personType);
             if (personOpt.isPresent()) {
                 this.personRepository.deleteById(id);
             }
@@ -160,10 +161,46 @@ public class PersonServiceImpl implements PersonService {
                     .replace("tel:", "");
             person.setPhoneNumber(formatted);
 
+            validatePhoneNumberUniqueness(person);
         } catch (IllegalArgumentException e) {
             throw e;
         } catch (Exception e) {
             throw new IllegalArgumentException("Unable to parse PhoneNumber");
         }
     }
+
+    private void validatePhoneNumberUniqueness(Person person) {
+        Optional<Person> existingPersonOpt = personRepository.findByPhoneNumber(person.getPhoneNumber());
+
+        boolean invalid = existingPersonOpt.isPresent();
+        if (person.getId() > 0) {
+            invalid = checkNotMatchId(person, existingPersonOpt);
+        }
+
+        if (invalid) {
+            throw new IllegalArgumentException("Phone number already in use");
+        }
+    }
+
+    private void validateEmailUniqueness(Person person) {
+        Optional<Person> existingPersonOpt = personRepository.findByEmail(person.getEmail());
+
+        boolean invalid = existingPersonOpt.isPresent();
+        if (person.getId() > 0) {
+            invalid = checkNotMatchId(person, existingPersonOpt);
+        }
+
+        if (invalid) {
+            throw new IllegalArgumentException("Email address already in use");
+        }
+    }
+
+    private boolean checkNotMatchId(Person person, Optional<Person> existingPersonOpt) {
+        return existingPersonOpt
+                .map(Person::getId)
+                .filter(id -> person.getId() != id)
+                .isPresent();
+    }
+
+
 }

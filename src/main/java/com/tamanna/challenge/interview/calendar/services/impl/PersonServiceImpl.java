@@ -1,12 +1,21 @@
 package com.tamanna.challenge.interview.calendar.services.impl;
 
-import com.tamanna.challenge.interview.calendar.entities.AbstractPerson;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber;
+import com.tamanna.challenge.interview.calendar.configurations.PhoneNumberValidationKeys;
+import com.tamanna.challenge.interview.calendar.entities.Person;
+import com.tamanna.challenge.interview.calendar.entities.enums.PersonType;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import com.tamanna.challenge.interview.calendar.repositories.PersonRepository;
 import com.tamanna.challenge.interview.calendar.services.PersonService;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * @author tlferreira
@@ -14,23 +23,147 @@ import org.springframework.stereotype.Service;
 @Log4j2
 @Service
 @AllArgsConstructor
-public class PersonServiceImpl<T extends AbstractPerson> implements PersonService<T> {
-    private final PersonRepository<T> personRepository;
+public class PersonServiceImpl implements PersonService {
+    private final PersonRepository personRepository;
+    private final PhoneNumberValidationKeys phoneNumberValidationKeys;
 
     @Override
-    public T createPerson(T person) throws ServiceException {
+    public Person createPerson(Person person) throws ServiceException {
+        log.debug("Start creating Person {}", person);
+        boolean success = true;
         try {
+            validateAndFormatPhoneNumber(person);
+
+            //check for number uniqueness
+            if (personRepository.findByPhoneNumber(person.getPhoneNumber()).isPresent()) {
+                throw new IllegalArgumentException("Phone number already in use");
+            }
+
             //check for email uniqueness
-            if(personRepository.findByEmail(person.getEmail()).isPresent()){
+            if (personRepository.findByEmail(person.getEmail()).isPresent()) {
                 throw new IllegalArgumentException("Email address already in use");
             }
+
             return personRepository.save(person);
         } catch (IllegalArgumentException e) {
-            log.error("Unable to create person {}, Illegal Argument, Exception: ", person, e);
+            success = false;
+            log.error("Unable to create Person {}, Illegal Argument, Exception: ", person, e);
             throw e;
         } catch (Exception e) {
-            log.error("Unable to create person {}, Exception: ", person, e);
+            success = false;
+            log.error("Unable to create Person {}, Exception: ", person, e);
             throw new ServiceException("Error creating person", e);
+        } finally {
+            log.debug("Finished creating Person {}, success: {}", person, success);
+        }
+    }
+
+    @Override
+    public List<Person> findAllPageable(PersonType personType, int page, int size) throws ServiceException {
+        log.debug("Start findAllPerson paginated, PersonType: {}, Page:{} Size:{}", personType, page, size);
+        boolean success = true;
+        try {
+            return Optional.of(this.personRepository)
+                    .map(repo -> repo.findAllByPersonType(personType, PageRequest.of(page, size)))
+                    .orElseGet(ArrayList::new);
+        } catch (Exception e) {
+            success = false;
+            log.error("Unable to findAllPerson, PersonType: {}, Page:{} Size:{}, Exception: ", personType, page, size, e);
+            throw new ServiceException("Error findAllPerson paginated", e);
+        } finally {
+            log.debug("Finished findAllPerson paginated, PersonType: {}, Page:{} Size:{}, success: {}", personType, page, size, success);
+        }
+    }
+
+    @Override
+    public List<Person> findAll(PersonType personType) throws ServiceException {
+        log.debug("Start findAllPerson PersonType: {}", personType);
+        boolean success = true;
+        try {
+            return Optional.of(this.personRepository)
+                    .map(repo -> repo.findAllByPersonType(personType))
+                    .orElseGet(ArrayList::new);
+        } catch (Exception e) {
+            success = false;
+            log.error("Unable to findAllPerson PersonType: {}, Exception: ", personType, e);
+            throw new ServiceException("Error findAllPerson", e);
+        } finally {
+            log.debug("Finished findAllPerson PersonType: {}, success: {}", personType, success);
+        }
+    }
+
+    @Override
+    public Optional<Person> findById(PersonType personType, long id) throws ServiceException {
+        log.debug("Start getPerson PersonType: {}, Id: {}", personType, id);
+        boolean success = true;
+        try {
+            return this.personRepository.findByIdAndPersonType(id, personType);
+        } catch (Exception e) {
+            success = false;
+            log.error("Unable to getPerson PersonType: {}, Id: {}, Exception: ", personType, id, e);
+            throw new ServiceException("Error getPerson", e);
+        } finally {
+            log.debug("Finished getPerson PersonType: {}, Id: {}, success: {}", personType, id, success);
+        }
+    }
+
+    @Override
+    public Optional<Person> update(long id, Person person) throws ServiceException {
+        log.debug("Start updatePerson Id: {}, Person: {}", id, person);
+        boolean success = true;
+        try {
+            Optional<Person> personOpt = this.personRepository.findById(id);
+            if (personOpt.isPresent()) {
+                person.setId(id);
+                personOpt = Optional.of(this.personRepository.save(person));
+            }
+            return personOpt;
+        } catch (Exception e) {
+            success = false;
+            log.error("Unable to updatePerson Id: {}, Person: {}, Exception: ", id, person, e);
+            throw new ServiceException("Error updatePerson", e);
+        } finally {
+            log.debug("Finished updatePerson Id: {}, Person: {}, success: {}", id, person, success);
+        }
+    }
+
+    @Override
+    public Optional<Person> delete(PersonType personType, long id) throws ServiceException {
+        log.debug("Start deletePerson PersonType: {}, Id: {}", personType, id);
+        boolean success = true;
+        try {
+            Optional<Person> personOpt = this.personRepository.findById(id);
+            if (personOpt.isPresent()) {
+                this.personRepository.deleteById(id);
+            }
+            return personOpt;
+        } catch (Exception e) {
+            success = false;
+            log.error("Unable to deletePerson PersonType: {}, Id: {}, Exception: ", personType, id, e);
+            throw new ServiceException("Error deletePerson", e);
+        } finally {
+            log.debug("Finished deletePerson PersonType: {}, Id: {}, success: {}", personType, id, success);
+        }
+    }
+
+    private void validateAndFormatPhoneNumber(Person person) throws IllegalArgumentException {
+        try {
+            PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
+
+            Phonenumber.PhoneNumber phoneNumber = phoneNumberUtil.parse(person.getPhoneNumber(), this.phoneNumberValidationKeys.getDefaultRegion());
+            if (!phoneNumberUtil.isValidNumber(phoneNumber)) {
+                throw new IllegalArgumentException("Invalid PhoneNumber");
+            }
+
+            String formatted = phoneNumberUtil
+                    .format(phoneNumber, this.phoneNumberValidationKeys.getFormat())
+                    .replace("tel:", "");
+            person.setPhoneNumber(formatted);
+
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Unable to parse PhoneNumber");
         }
     }
 }

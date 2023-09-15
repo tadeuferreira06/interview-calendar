@@ -1,15 +1,24 @@
 package com.tamanna.challenge.interview.calendar.repositories;
 
 
-import com.tamanna.challenge.interview.calendar.entities.AbstractPerson;
+import com.tamanna.challenge.interview.calendar.entities.Person;
+import com.tamanna.challenge.interview.calendar.entities.enums.PersonType;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
-public interface PersonRepository <T extends AbstractPerson> extends JpaRepository<T, UUID> {
+public interface PersonRepository extends JpaRepository<Person, Long> {
+    List<Person> findAllByPersonType(PersonType personType, Pageable pageable);
 
-    Optional<T> findByEmail(String email);
+    List<Person> findAllByPersonType(PersonType personType);
+
+    Optional<Person> findByIdAndPersonType(long id, PersonType personType);
+
+    Optional<Person> findByEmail(String email);
+
+    Optional<Person> findByPhoneNumber(String phoneNumber);
 }

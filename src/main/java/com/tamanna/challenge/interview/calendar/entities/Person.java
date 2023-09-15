@@ -1,11 +1,13 @@
 package com.tamanna.challenge.interview.calendar.entities;
 
+import com.tamanna.challenge.interview.calendar.entities.enums.PersonType;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * @author tlferreira
@@ -17,23 +19,34 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @ToString
 @Entity
-@Table(name = "PERSON")
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name="PERSON_TYPE", discriminatorType = DiscriminatorType.STRING)
-public abstract class AbstractPerson {
+public class Person {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "PERSON_SEQ_GEN")
-    @SequenceGenerator(name = "PERSON_SEQ_GEN", sequenceName = "PERSON_SEQ", initialValue = 1, allocationSize = 10)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
+    @Enumerated(EnumType.STRING)
+    private PersonType personType;
+
     private String firstName;
+
     private String lastName;
+
     @Column(unique=true)
     private String email;
+
+    @Column(unique=true)
     private String phoneNumber;
+
     @CreationTimestamp
     @Column(name = "creation_date")
     private LocalDateTime creationDate;
+
     @UpdateTimestamp
     @Column(name = "update_date")
     private LocalDateTime updateDate;
+
+    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Schedule> availableSchedules;
+
+
 }

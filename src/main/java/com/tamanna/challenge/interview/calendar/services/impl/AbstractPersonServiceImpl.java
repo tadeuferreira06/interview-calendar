@@ -3,7 +3,7 @@ package com.tamanna.challenge.interview.calendar.services.impl;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.tamanna.challenge.interview.calendar.configurations.PhoneNumberValidationKeys;
-import com.tamanna.challenge.interview.calendar.entities.Person;
+import com.tamanna.challenge.interview.calendar.entities.AbstractPerson;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import com.tamanna.challenge.interview.calendar.repositories.PersonRepository;
 import com.tamanna.challenge.interview.calendar.services.PersonService;
@@ -22,7 +22,7 @@ import java.util.Optional;
  */
 @Log4j2
 @AllArgsConstructor
-public abstract class AbstractPersonServiceImpl<T extends Person, E extends PersonRepository<T>> implements PersonService <T> {
+public abstract class AbstractPersonServiceImpl<T extends AbstractPerson, E extends PersonRepository<T>> implements PersonService <T> {
     private final E personRepository;
     private final PhoneNumberValidationKeys phoneNumberValidationKeys;
 
@@ -146,7 +146,7 @@ public abstract class AbstractPersonServiceImpl<T extends Person, E extends Pers
         }
     }
 
-    private void validateAndFormatPhoneNumber(Person person) throws IllegalArgumentException {
+    private void validateAndFormatPhoneNumber(AbstractPerson person) throws IllegalArgumentException {
         try {
             PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
 
@@ -168,7 +168,7 @@ public abstract class AbstractPersonServiceImpl<T extends Person, E extends Pers
         }
     }
 
-    private void validatePhoneNumberUniqueness(Person person) {
+    private void validatePhoneNumberUniqueness(AbstractPerson person) {
         Optional<T> existingPersonOpt = personRepository.findByPhoneNumber(person.getPhoneNumber());
 
         boolean invalid = existingPersonOpt.isPresent();
@@ -181,7 +181,7 @@ public abstract class AbstractPersonServiceImpl<T extends Person, E extends Pers
         }
     }
 
-    private void validateEmailUniqueness(Person person) {
+    private void validateEmailUniqueness(AbstractPerson person) {
         Optional<T> existingPersonOpt = personRepository.findByEmail(person.getEmail());
 
         boolean invalid = existingPersonOpt.isPresent();
@@ -194,9 +194,9 @@ public abstract class AbstractPersonServiceImpl<T extends Person, E extends Pers
         }
     }
 
-    private boolean checkNotMatchId(Person person, Optional<T> existingPersonOpt) {
+    private boolean checkNotMatchId(AbstractPerson person, Optional<T> existingPersonOpt) {
         return existingPersonOpt
-                .map(Person::getId)
+                .map(AbstractPerson::getId)
                 .filter(id -> person.getId() != id)
                 .isPresent();
     }

@@ -1,12 +1,12 @@
 package com.tamanna.challenge.interview.calendar.services;
 
-import com.tamanna.challenge.interview.calendar.entities.Person;
+import com.tamanna.challenge.interview.calendar.entities.AbstractPerson;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface PersonService<T extends Person> {
+public interface PersonService<T extends AbstractPerson> {
     T createPerson(T person) throws ServiceException;
 
     List<T> findAllPageable(int page, int size) throws ServiceException;

@@ -1,6 +1,6 @@
 package com.tamanna.challenge.interview.calendar.services.impl;
 
-import com.tamanna.challenge.interview.calendar.entities.Person;
+import com.tamanna.challenge.interview.calendar.entities.AbstractPerson;
 import com.tamanna.challenge.interview.calendar.entities.Schedule;
 import com.tamanna.challenge.interview.calendar.entities.enums.PersonType;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
@@ -17,7 +17,7 @@ import java.util.Optional;
  */
 @Log4j2
 @AllArgsConstructor
-public abstract class AbstractPersonScheduleServiceImpl<T extends Person> implements PersonScheduleService<T> {
+public abstract class AbstractPersonScheduleServiceImpl<T extends AbstractPerson> implements PersonScheduleService<T> {
     private final ScheduleRepository scheduleRepository;
     private final PersonType personType;
 

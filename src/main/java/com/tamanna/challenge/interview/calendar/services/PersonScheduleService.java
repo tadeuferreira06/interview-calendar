@@ -1,12 +1,12 @@
 package com.tamanna.challenge.interview.calendar.services;
 
-import com.tamanna.challenge.interview.calendar.entities.Person;
+import com.tamanna.challenge.interview.calendar.entities.AbstractPerson;
 import com.tamanna.challenge.interview.calendar.entities.Schedule;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 
 import java.util.Optional;
 
-public interface PersonScheduleService<T extends Person> {
+public interface PersonScheduleService<T extends AbstractPerson> {
     Optional<Schedule> addSchedule(T person, Schedule schedule) throws ServiceException;
 
     Optional<Schedule> findById(long personId, long scheduleId) throws ServiceException;

@@ -19,10 +19,11 @@ import java.util.List;
 @NoArgsConstructor
 @ToString
 @Entity
+@Table(name = "person")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name="personType",
         discriminatorType = DiscriminatorType.STRING)
-public class Person {
+public abstract class AbstractPerson {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;

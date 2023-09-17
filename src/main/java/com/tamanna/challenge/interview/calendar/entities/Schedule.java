@@ -41,5 +41,5 @@ public class Schedule {
 
     @ManyToOne
     @JoinColumn
-    private Person person;
+    private AbstractPerson person;
 }

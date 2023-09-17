@@ -1,7 +1,7 @@
 package com.tamanna.challenge.interview.calendar.services;
 
 import com.tamanna.challenge.interview.calendar.configurations.PhoneNumberValidationKeys;
-import com.tamanna.challenge.interview.calendar.entities.Person;
+import com.tamanna.challenge.interview.calendar.entities.AbstractPerson;
 import com.tamanna.challenge.interview.calendar.entities.Interviewer;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import com.tamanna.challenge.interview.calendar.repositories.InterviewerRepository;
@@ -260,7 +260,7 @@ class PersonServiceTests {
         Optional<Interviewer> personUpdatedOpt = personService.update(personA.getId(), personUpdate);
 
         Assertions.assertTrue(personUpdatedOpt.isPresent());
-        Person personUpdated = personUpdatedOpt.get();
+        AbstractPerson personUpdated = personUpdatedOpt.get();
         Assertions.assertEquals(personA.getId(), personUpdated.getId());
         Assertions.assertEquals(personA.getFirstName(), personUpdated.getFirstName());
         Assertions.assertEquals(personA.getLastName(), personUpdated.getLastName());

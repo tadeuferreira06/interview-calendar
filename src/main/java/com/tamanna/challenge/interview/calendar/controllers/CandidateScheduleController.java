@@ -3,7 +3,7 @@ package com.tamanna.challenge.interview.calendar.controllers;
 import com.tamanna.challenge.interview.calendar.dtos.ScheduleDTO;
 import com.tamanna.challenge.interview.calendar.dtos.ScheduleInfoDTO;
 import com.tamanna.challenge.interview.calendar.entities.Candidate;
-import com.tamanna.challenge.interview.calendar.entities.Person;
+import com.tamanna.challenge.interview.calendar.entities.AbstractPerson;
 import com.tamanna.challenge.interview.calendar.entities.Schedule;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import com.tamanna.challenge.interview.calendar.services.CandidateScheduleService;
@@ -54,7 +54,7 @@ public class CandidateScheduleController {
 
         if (personOpt.isPresent()) {
             return personOpt
-                    .map(Person::getAvailableSchedules)
+                    .map(AbstractPerson::getAvailableSchedules)
                     .map(schedules -> new ResponseEntity<>(this.mapListEntityDTO(schedules), HttpStatus.OK))
                     .orElseGet(() -> new ResponseEntity<>(HttpStatus.NO_CONTENT));
         }

@@ -19,12 +19,16 @@ import java.util.List;
 @NoArgsConstructor
 @ToString
 @Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name="personType",
+        discriminatorType = DiscriminatorType.STRING)
 public class Person {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @Enumerated(EnumType.STRING)
+    @Column(insertable = false, updatable = false)
     private PersonType personType;
 
     private String firstName;

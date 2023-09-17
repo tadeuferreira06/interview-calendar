@@ -1,14 +1,13 @@
 package com.tamanna.challenge.interview.calendar.controllers;
 
-import com.tamanna.challenge.interview.calendar.dtos.PersonDTO;
 import com.tamanna.challenge.interview.calendar.dtos.ScheduleDTO;
 import com.tamanna.challenge.interview.calendar.dtos.ScheduleInfoDTO;
+import com.tamanna.challenge.interview.calendar.entities.Candidate;
 import com.tamanna.challenge.interview.calendar.entities.Person;
 import com.tamanna.challenge.interview.calendar.entities.Schedule;
-import com.tamanna.challenge.interview.calendar.entities.enums.PersonType;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
-import com.tamanna.challenge.interview.calendar.services.PersonScheduleService;
-import com.tamanna.challenge.interview.calendar.services.PersonService;
+import com.tamanna.challenge.interview.calendar.services.CandidateScheduleService;
+import com.tamanna.challenge.interview.calendar.services.CandidateService;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
@@ -28,26 +27,30 @@ import static com.tamanna.challenge.interview.calendar.controllers.ControllerCon
  * @author tlferreira
  */
 @RestController
-@RequestMapping("/{personType}s/{id}/schedules")
+@RequestMapping("/candidates/{id}/schedules")
 @AllArgsConstructor
 @Validated
-public class PersonScheduleController {
+public class CandidateScheduleController {
     private final ModelMapper modelMapper;
-    private final PersonScheduleService personScheduleService;
-    private final PersonService personService;
+    private final CandidateScheduleService personScheduleService;
+    private final CandidateService personService;
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ScheduleDTO> createSchedule(@PathVariable(PERSON_TYPE_PATH_PARAM) PersonType personType, @Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id, @RequestBody ScheduleInfoDTO scheduleInfoDTO) throws ServiceException {
-        Schedule schedule = this.mapDTOEntity(scheduleInfoDTO);
+    public ResponseEntity<ScheduleDTO> createSchedule(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id, @RequestBody ScheduleInfoDTO scheduleInfoDTO) throws ServiceException {
+        Optional<Schedule> scheduleOpt = Optional.empty();
 
-        Optional<Schedule> scheduleOpt = personScheduleService.addSchedule(personType, id, schedule);
+        Optional<Candidate> personOpt = personService.findById(id);
+        if(personOpt.isPresent()){
+            Schedule schedule = this.mapDTOEntity(scheduleInfoDTO);
+            scheduleOpt = personScheduleService.addSchedule(personOpt.get(), schedule);
+        }
 
         return handleOptResponse(scheduleOpt);
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<ScheduleDTO>> listSchedules(@PathVariable(PERSON_TYPE_PATH_PARAM) PersonType personType, @Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id) throws ServiceException {
-        Optional<Person> personOpt = personService.findById(personType, id);
+    public ResponseEntity<List<ScheduleDTO>> listSchedules(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id) throws ServiceException {
+        Optional<Candidate> personOpt = personService.findById(id);
 
         if (personOpt.isPresent()) {
             return personOpt
@@ -60,22 +63,22 @@ public class PersonScheduleController {
     }
 
     @GetMapping(path = "/{scheduleId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ScheduleDTO> getSchedule(@PathVariable(PERSON_TYPE_PATH_PARAM) PersonType personType, @Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id, @Min(value = 1, message = INVALID_SCHEDULE_ID_MESSAGE) @PathVariable(value = SCHEDULE_ID_PATH_VARIABLE) long scheduleId) throws ServiceException {
-        Optional<Schedule> scheduleOpt = personScheduleService.findById(personType, id, scheduleId);
+    public ResponseEntity<ScheduleDTO> getSchedule(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id, @Min(value = 1, message = INVALID_SCHEDULE_ID_MESSAGE) @PathVariable(value = SCHEDULE_ID_PATH_VARIABLE) long scheduleId) throws ServiceException {
+        Optional<Schedule> scheduleOpt = personScheduleService.findById(id, scheduleId);
 
         return handleOptResponse(scheduleOpt);
     }
 
     @PutMapping(path = "/{scheduleId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ScheduleDTO> putSchedule(@PathVariable(PERSON_TYPE_PATH_PARAM) PersonType personType, @Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id, @Min(value = 1, message = INVALID_SCHEDULE_ID_MESSAGE) @PathVariable(value = SCHEDULE_ID_PATH_VARIABLE) long scheduleId, @RequestBody ScheduleInfoDTO scheduleInfoDTO) throws ServiceException {
-        Optional<Schedule> scheduleOpt = personScheduleService.update(personType, id, scheduleId, mapDTOEntity(scheduleInfoDTO));
+    public ResponseEntity<ScheduleDTO> putSchedule(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id, @Min(value = 1, message = INVALID_SCHEDULE_ID_MESSAGE) @PathVariable(value = SCHEDULE_ID_PATH_VARIABLE) long scheduleId, @RequestBody ScheduleInfoDTO scheduleInfoDTO) throws ServiceException {
+        Optional<Schedule> scheduleOpt = personScheduleService.update(id, scheduleId, mapDTOEntity(scheduleInfoDTO));
 
         return handleOptResponse(scheduleOpt);
     }
 
     @DeleteMapping(path = "/{scheduleId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ScheduleDTO> deleteSchedule(@PathVariable(PERSON_TYPE_PATH_PARAM) PersonType personType, @Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id, @Min(value = 1, message = INVALID_SCHEDULE_ID_MESSAGE) @PathVariable(value = SCHEDULE_ID_PATH_VARIABLE) long scheduleId) throws ServiceException {
-        Optional<Schedule> scheduleOpt = personScheduleService.delete(personType, id, scheduleId);
+    public ResponseEntity<ScheduleDTO> deleteSchedule(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id, @Min(value = 1, message = INVALID_SCHEDULE_ID_MESSAGE) @PathVariable(value = SCHEDULE_ID_PATH_VARIABLE) long scheduleId) throws ServiceException {
+        Optional<Schedule> scheduleOpt = personScheduleService.delete(id, scheduleId);
 
         return handleOptResponse(scheduleOpt);
     }

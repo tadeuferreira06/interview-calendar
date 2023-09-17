@@ -1,6 +1,6 @@
 package com.tamanna.challenge.interview.calendar;
 
-import com.tamanna.challenge.interview.calendar.entities.Person;
+import com.tamanna.challenge.interview.calendar.entities.Interviewer;
 import com.tamanna.challenge.interview.calendar.entities.Schedule;
 import com.tamanna.challenge.interview.calendar.entities.enums.PersonType;
 
@@ -14,12 +14,12 @@ public class DummyDataUtils {
         //private
     }
 
-    public static Person getNewPersonInterviewer() {
+    public static Interviewer getNewPersonInterviewer() {
         return getNewPersonInterviewer(null);
     }
 
-    public static Person getNewPersonInterviewer(Long id) {
-        Person person = new Person();
+    public static Interviewer getNewPersonInterviewer(Long id) {
+        Interviewer person = new Interviewer();
 
         if (id != null) {
             person.setId(id);
@@ -31,25 +31,6 @@ public class DummyDataUtils {
         person.setPhoneNumber("+351-244-000-000");
         person.setPersonType(PersonType.INTERVIEWER);
 
-        return person;
-    }
-
-    public static Person getNewPersonCandidate() {
-        return getNewPersonCandidate(null);
-    }
-
-    public static Person getNewPersonCandidate(Long id) {
-        Person person = new Person();
-
-        if (id != null) {
-            person.setId(id);
-        }
-
-        person.setFirstName("José");
-        person.setLastName("Almeida");
-        person.setEmail("ja@mail.com");
-        person.setPhoneNumber("+351-244-000-001");
-        person.setPersonType(PersonType.CANDIDATE);
         return person;
     }
 

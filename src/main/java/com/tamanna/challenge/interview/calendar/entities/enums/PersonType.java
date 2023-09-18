@@ -15,8 +15,12 @@ public enum PersonType {
         }
     }
 
-    public class Values {
+    public static class Values {
         public static final String INTERVIEWER = "INTERVIEWER";
         public static final String CANDIDATE = "CANDIDATE";
+
+        private Values() {
+            //private
+        }
     }
 }

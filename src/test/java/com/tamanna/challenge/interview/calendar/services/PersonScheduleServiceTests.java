@@ -83,7 +83,7 @@ class PersonScheduleServiceTests {
     @Test
     void updateScheduleTest_NotFound() throws ServiceException {
         Interviewer personA = getNewPersonInterviewer(1L);
-        personA.setAvailableSchedules(new ArrayList<>());
+        personA.setScheduleList(new ArrayList<>());
 
         Schedule schedule = getNewSchedule(5L, 16);
         Schedule scheduleUpdate = getNewSchedule();
@@ -97,15 +97,15 @@ class PersonScheduleServiceTests {
     @Test
     void updatePersonTest_DuplicatedSchedule() throws ServiceException {
         Interviewer personA = getNewPersonInterviewer(1L);
-        personA.setAvailableSchedules(new ArrayList<>());
+        personA.setScheduleList(new ArrayList<>());
 
         Schedule scheduleA = getNewSchedule(5L, 15);
         scheduleA.setPerson(personA);
-        personA.getAvailableSchedules().add(scheduleA);
+        personA.getScheduleList().add(scheduleA);
 
         Schedule scheduleB = getNewSchedule(6L);
         scheduleB.setPerson(personA);
-        personA.getAvailableSchedules().add(scheduleB);
+        personA.getScheduleList().add(scheduleB);
         //update = b
         Schedule scheduleUpdate = getNewSchedule();
 
@@ -118,15 +118,15 @@ class PersonScheduleServiceTests {
     @Test
     void updatePersonTest_SuccessHour() throws ServiceException {
         Interviewer personA = getNewPersonInterviewer(1L);
-        personA.setAvailableSchedules(new ArrayList<>());
+        personA.setScheduleList(new ArrayList<>());
 
         Schedule scheduleA = getNewSchedule(5L, 15);
         scheduleA.setPerson(personA);
-        personA.getAvailableSchedules().add(scheduleA);
+        personA.getScheduleList().add(scheduleA);
 
         Schedule scheduleB = getNewSchedule(6L, 16);
         scheduleB.setPerson(personA);
-        personA.getAvailableSchedules().add(scheduleB);
+        personA.getScheduleList().add(scheduleB);
         //update = b
         Schedule scheduleUpdate = getNewSchedule();
 
@@ -146,15 +146,15 @@ class PersonScheduleServiceTests {
     @Test
     void updatePersonTest_SuccessDay() throws ServiceException {
         Interviewer personA = getNewPersonInterviewer(1L);
-        personA.setAvailableSchedules(new ArrayList<>());
+        personA.setScheduleList(new ArrayList<>());
 
         Schedule scheduleA = getNewSchedule(5L, 15, LocalDate.of(2023, 10, 15));
         scheduleA.setPerson(personA);
-        personA.getAvailableSchedules().add(scheduleA);
+        personA.getScheduleList().add(scheduleA);
 
         Schedule scheduleB = getNewSchedule(6L, 16);
         scheduleB.setPerson(personA);
-        personA.getAvailableSchedules().add(scheduleB);
+        personA.getScheduleList().add(scheduleB);
         //update = b
         Schedule scheduleUpdate = getNewSchedule();
         scheduleUpdate.setHour(scheduleA.getHour());

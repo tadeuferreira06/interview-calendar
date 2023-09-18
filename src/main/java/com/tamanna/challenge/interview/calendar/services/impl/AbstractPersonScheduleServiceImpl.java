@@ -28,8 +28,8 @@ public abstract class AbstractPersonScheduleServiceImpl<T extends AbstractPerson
         try {
             validateScheduleUniqueness(person.getId(), schedule);
 
-            if (person.getAvailableSchedules() == null) {
-                person.setAvailableSchedules(new ArrayList<>());
+            if (person.getScheduleList() == null) {
+                person.setScheduleList(new ArrayList<>());
             }
 
             schedule.setPerson(person);
@@ -69,7 +69,7 @@ public abstract class AbstractPersonScheduleServiceImpl<T extends AbstractPerson
 
     @Override
     public Optional<Schedule> update(long personId, long scheduleId, Schedule schedule) throws ServiceException {
-        log.debug("Start update Schedule ScheduleId: {}, Schedule:{} from Person PersonType: {}, Id: {}", scheduleId, schedule, personType, personId);
+        log.debug("Start updateSchedule ScheduleId: {}, Schedule:{} from Person PersonType: {}, Id: {}", scheduleId, schedule, personType, personId);
         boolean success = true;
         try {
             Optional<Schedule> scheduleOpt = scheduleRepository.findByIdAndPersonIdAndPersonType(scheduleId, personId, personType);
@@ -94,7 +94,7 @@ public abstract class AbstractPersonScheduleServiceImpl<T extends AbstractPerson
 
     @Override
     public Optional<Schedule> delete(long personId, long scheduleId) throws ServiceException {
-        log.debug("Start update Schedule ScheduleId: {} from Person PersonType: {}, Id: {}", scheduleId, personType, personId);
+        log.debug("Start deleteSchedule ScheduleId: {} from Person PersonType: {}, Id: {}", scheduleId, personType, personId);
         boolean success = true;
         try {
             Optional<Schedule> scheduleOpt = scheduleRepository.findByIdAndPersonIdAndPersonType(scheduleId, personId, personType);

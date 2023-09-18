@@ -13,6 +13,8 @@ public interface PersonService<T extends AbstractPerson> {
 
     List<T> findAll() throws ServiceException;
 
+    List<T> findAll(List<Long> ids) throws ServiceException;
+
     Optional<T> findById(long id) throws ServiceException;
 
     Optional<T> update(long id, T person) throws ServiceException;

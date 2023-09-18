@@ -3,7 +3,6 @@ package com.tamanna.challenge.interview.calendar.controllers;
 import com.tamanna.challenge.interview.calendar.dtos.ScheduleDTO;
 import com.tamanna.challenge.interview.calendar.dtos.ScheduleInfoDTO;
 import com.tamanna.challenge.interview.calendar.entities.Interviewer;
-import com.tamanna.challenge.interview.calendar.entities.AbstractPerson;
 import com.tamanna.challenge.interview.calendar.entities.Schedule;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import com.tamanna.challenge.interview.calendar.services.InterviewerScheduleService;
@@ -50,11 +49,11 @@ public class InterviewerScheduleController {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<ScheduleDTO>> listSchedules(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id) throws ServiceException {
-        Optional<Interviewer> personOpt = personService.findById(id);
+        Optional<List<Schedule>> schedulesOpt = personScheduleService.findAll(id);
 
-        if (personOpt.isPresent()) {
-            return personOpt
-                    .map(AbstractPerson::getAvailableSchedules)
+        if (schedulesOpt.isPresent()) {
+            return schedulesOpt
+                    .filter(schedules -> !schedules.isEmpty())
                     .map(schedules -> new ResponseEntity<>(this.mapListEntityDTO(schedules), HttpStatus.OK))
                     .orElseGet(() -> new ResponseEntity<>(HttpStatus.NO_CONTENT));
         }

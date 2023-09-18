@@ -13,6 +13,6 @@ import java.time.LocalDate;
 public class ScheduleInfoDTO {
     @FutureOrPresent(message = "Day must be today or future")
     private LocalDate day;
-    @Size(min = 0, max = 23, message = "Hour must be [0,23]")
+    @Size(max = 23, message = "Hour must be [0,23]")
     private int hour;
 }

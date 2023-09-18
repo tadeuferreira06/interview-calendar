@@ -51,7 +51,7 @@ public abstract class AbstractPerson {
     private LocalDateTime updateDate;
 
     @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Schedule> availableSchedules;
+    private List<Schedule> scheduleList;
 
 
 }

@@ -85,6 +85,23 @@ public abstract class AbstractPersonServiceImpl<T extends AbstractPerson, E exte
     }
 
     @Override
+    public List<T> findAll(List<Long> ids) throws ServiceException {
+        log.debug("Start findAllById");
+        boolean success = true;
+        try {
+            return Optional.of(this.personRepository)
+                    .map(repo -> repo.findAllById(ids))
+                    .orElseGet(ArrayList::new);
+        } catch (Exception e) {
+            success = false;
+            log.error("Unable to findAllById, Exception: ", e);
+            throw new ServiceException("Error findAllPerson Ids", e);
+        } finally {
+            log.debug("Finished findAllById, success: {}", success);
+        }
+    }
+
+    @Override
     public Optional<T> findById(long id) throws ServiceException {
         log.debug("Start getPerson, Id: {}", id);
         boolean success = true;

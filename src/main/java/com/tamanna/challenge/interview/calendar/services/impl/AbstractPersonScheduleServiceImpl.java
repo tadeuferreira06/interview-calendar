@@ -4,12 +4,14 @@ import com.tamanna.challenge.interview.calendar.entities.AbstractPerson;
 import com.tamanna.challenge.interview.calendar.entities.Schedule;
 import com.tamanna.challenge.interview.calendar.entities.enums.PersonType;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
+import com.tamanna.challenge.interview.calendar.repositories.PersonRepository;
 import com.tamanna.challenge.interview.calendar.repositories.ScheduleRepository;
 import com.tamanna.challenge.interview.calendar.services.PersonScheduleService;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -19,6 +21,7 @@ import java.util.Optional;
 @AllArgsConstructor
 public abstract class AbstractPersonScheduleServiceImpl<T extends AbstractPerson> implements PersonScheduleService<T> {
     private final ScheduleRepository scheduleRepository;
+    private final PersonRepository<T> personRepository;
     private final PersonType personType;
 
     @Override
@@ -45,6 +48,31 @@ public abstract class AbstractPersonScheduleServiceImpl<T extends AbstractPerson
             throw new ServiceException("Error addSchedule", e);
         } finally {
             log.debug("Finished addSchedule {} to Person PersonType: {}, Person: {}, success: {}", schedule, personType, person, success);
+        }
+    }
+
+    @Override
+    public Optional<List<Schedule>> findAll(long personId) throws ServiceException {
+        log.debug("Start getSchedules All from Person PersonType: {}, Id: {}", personType, personId);
+        boolean success = true;
+        try {
+            Optional<T> personOpt = personRepository.findById(personId);
+            if(personOpt.isPresent()){
+                T person = personOpt.get();
+                return Optional.of(person.getScheduleList() == null ? new ArrayList<>() : person.getScheduleList());
+            }
+            success = false;
+            return Optional.empty();
+        } catch (IllegalArgumentException e) {
+            success = false;
+            log.error("Unable to getSchedules All from Person PersonType: {}, Id: {}, Illegal Argument, Exception: ", personType, personId, e);
+            throw e;
+        } catch (Exception e) {
+            success = false;
+            log.error("Unable to getSchedules All from Person PersonType: {}, Id: {}, Exception: ", personType, personId, e);
+            throw new ServiceException("Error getSchedule", e);
+        } finally {
+            log.debug("Finished getSchedules All from Person PersonType: {}, Id: {}, success: {}", personType, personId, success);
         }
     }
 

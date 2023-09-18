@@ -28,10 +28,6 @@ public abstract class AbstractPerson {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(insertable = false, updatable = false)
-    private PersonType personType;
-
     private String firstName;
 
     private String lastName;
@@ -52,6 +48,4 @@ public abstract class AbstractPerson {
 
     @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Schedule> scheduleList;
-
-
 }

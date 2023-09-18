@@ -5,6 +5,7 @@ import com.tamanna.challenge.interview.calendar.dtos.ScheduleDTO;
 import com.tamanna.challenge.interview.calendar.entities.Candidate;
 import com.tamanna.challenge.interview.calendar.entities.Interviewer;
 import com.tamanna.challenge.interview.calendar.entities.Schedule;
+import com.tamanna.challenge.interview.calendar.entities.enums.PersonType;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
@@ -21,12 +22,13 @@ public class ModelMapperConfiguration {
     public ModelMapper modelMapper() {
         ModelMapper modelMapper = new ModelMapper();
 
-        //added mappings because of AvailableMeetingDTO
-        modelMapper.createTypeMap(Interviewer.class, PersonDTO.class);
-        modelMapper.createTypeMap(Candidate.class, PersonDTO.class);
+        modelMapper
+                .createTypeMap(Interviewer.class, PersonDTO.class)
+                .addMapping(src -> PersonType.INTERVIEWER, PersonDTO::setPersonType);
+        modelMapper
+                .createTypeMap(Candidate.class, PersonDTO.class)
+                .addMapping(src -> PersonType.CANDIDATE, PersonDTO::setPersonType);
 
-        modelMapper.createTypeMap(Schedule.class, ScheduleDTO.class);
-
-        return new ModelMapper();
+        return modelMapper;
     }
 }

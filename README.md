@@ -11,7 +11,37 @@ http://localhost:9001/h2-console
 Use the correct url and credentials that are in: ``application.properties``
 
 ## Run Application
-TODO
+
+### Requirements to Run
+
+* Java 17
+* Maven
+* Docker?
+
+### Build Project
+
+```
+mvn clean package
+```
+
+### Run Project
+
+#### Using Maven
+```
+mvn spring-boot:run
+```
+
+#### Using Java Directly
+```
+java -jar target/interview-calendar-*.jar
+```
+## How to Use - Swagger UI
+
+Open the following link to access the Swagger-UI:
+
+```
+http://localhost:8080/swagger-ui/index.html
+```
 
 ## How to Use - Person CRUD
 Candidates and Interviewers supports all the same operations, The following examples will use the ``interviewers`` as an example. 

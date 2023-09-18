@@ -16,6 +16,6 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     @Query("SELECT s FROM Schedule s WHERE s.person.id = :personId AND s.day = :day and s.hour = :hour")
     Optional<Schedule> findByPersonIdAndDayAndHour(long personId, LocalDate day, int hour);
 
-    @Query("SELECT s FROM Schedule s WHERE s.id = :id AND s.person.id = :personId AND s.person.personType = :personType")
+    @Query("SELECT s FROM Schedule s WHERE s.id = :id AND s.person.id = :personId AND s.person.class = :personType")
     Optional<Schedule> findByIdAndPersonIdAndPersonType(long id, long personId, PersonType personType);
 }

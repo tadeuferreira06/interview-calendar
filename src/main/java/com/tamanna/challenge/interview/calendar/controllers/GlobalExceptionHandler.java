@@ -76,7 +76,7 @@ public class GlobalExceptionHandler {
         log.error(errorMessage, exception);
         return buildResponse(HttpStatus.BAD_REQUEST, errorMessage, errors);
     }
-    
+
     @ExceptionHandler
     @ResponseBody
     public <T> ResponseEntity<BaseResponse<T>> handleNotFoundException(NotFoundException exception) {

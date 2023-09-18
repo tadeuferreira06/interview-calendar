@@ -239,7 +239,6 @@ class PersonServiceTests {
         Assertions.assertEquals(personA.getId(), personUpdated.getId());
         Assertions.assertEquals(personA.getFirstName(), personUpdated.getFirstName());
         Assertions.assertEquals(personA.getLastName(), personUpdated.getLastName());
-        Assertions.assertEquals(personA.getPersonType(), personUpdated.getPersonType());
         Assertions.assertEquals(personA.getPhoneNumber(), personUpdated.getPhoneNumber());
         Assertions.assertNotEquals(personA.getEmail(), personUpdated.getEmail());
     }
@@ -264,7 +263,6 @@ class PersonServiceTests {
         Assertions.assertEquals(personA.getId(), personUpdated.getId());
         Assertions.assertEquals(personA.getFirstName(), personUpdated.getFirstName());
         Assertions.assertEquals(personA.getLastName(), personUpdated.getLastName());
-        Assertions.assertEquals(personA.getPersonType(), personUpdated.getPersonType());
         Assertions.assertNotEquals(personA.getPhoneNumber(), personUpdated.getPhoneNumber());
         Assertions.assertEquals(personA.getEmail(), personUpdated.getEmail());
     }

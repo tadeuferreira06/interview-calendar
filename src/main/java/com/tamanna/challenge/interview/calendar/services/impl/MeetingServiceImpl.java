@@ -73,17 +73,21 @@ public class MeetingServiceImpl implements MeetingService {
 
         return Optional
                 .of(candidate)
+                .filter(c -> c.getScheduleList() != null && !c.getScheduleList().isEmpty())
                 .map(AbstractPerson::getScheduleList)
-                .filter(scheduleList -> scheduleList != null && !scheduleList.isEmpty())
-                .orElseThrow(() -> new NotFoundException("Candidate without schedules"));
+                .orElseThrow(() -> new ServiceException("Candidate without schedules"));
     }
 
     private List<Interviewer> getInterviewers(List<Long> interviewerIdList) throws ServiceException {
-        return interviewerService
+        List<Interviewer> interviewerList = interviewerService
                 .findAll(interviewerIdList)
                 .stream()
                 .filter(interviewer -> interviewer.getScheduleList() != null && !interviewer.getScheduleList().isEmpty())
                 .toList();
+        if(interviewerList.isEmpty()){
+            throw new ServiceException("No available interviewer");
+        }
+        return interviewerList;
     }
 
     private String listToString(List<?> list) {

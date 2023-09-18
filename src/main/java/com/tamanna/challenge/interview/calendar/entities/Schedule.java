@@ -1,6 +1,5 @@
 package com.tamanna.challenge.interview.calendar.entities;
 
-import com.tamanna.challenge.interview.calendar.entities.enums.PersonType;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -42,5 +41,5 @@ public class Schedule {
 
     @ManyToOne
     @JoinColumn
-    private Person person;
+    private AbstractPerson person;
 }

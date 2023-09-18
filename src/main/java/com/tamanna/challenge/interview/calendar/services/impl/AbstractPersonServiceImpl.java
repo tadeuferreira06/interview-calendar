@@ -3,15 +3,15 @@ package com.tamanna.challenge.interview.calendar.services.impl;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.tamanna.challenge.interview.calendar.configurations.PhoneNumberValidationKeys;
-import com.tamanna.challenge.interview.calendar.entities.Person;
-import com.tamanna.challenge.interview.calendar.entities.enums.PersonType;
+import com.tamanna.challenge.interview.calendar.entities.AbstractPerson;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import com.tamanna.challenge.interview.calendar.repositories.PersonRepository;
 import com.tamanna.challenge.interview.calendar.services.PersonService;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Service;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,14 +21,13 @@ import java.util.Optional;
  * @author tlferreira
  */
 @Log4j2
-@Service
 @AllArgsConstructor
-public class PersonServiceImpl implements PersonService {
-    private final PersonRepository personRepository;
+public abstract class AbstractPersonServiceImpl<T extends AbstractPerson, E extends PersonRepository<T>> implements PersonService <T> {
+    private final E personRepository;
     private final PhoneNumberValidationKeys phoneNumberValidationKeys;
 
     @Override
-    public Person createPerson(Person person) throws ServiceException {
+    public T createPerson(T person) throws ServiceException {
         log.debug("Start creating Person {}", person);
         boolean success = true;
         try {
@@ -51,60 +50,61 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public List<Person> findAllPageable(PersonType personType, int page, int size) throws ServiceException {
-        log.debug("Start findAllPerson paginated, PersonType: {}, Page:{} Size:{}", personType, page, size);
+    public List<T> findAllPageable(int page, int size) throws ServiceException {
+        log.debug("Start findAllPerson paginated, Page:{} Size:{}", page, size);
         boolean success = true;
         try {
             return Optional.of(this.personRepository)
-                    .map(repo -> repo.findAllByPersonType(personType, PageRequest.of(page, size)))
+                    .map(repo -> repo.findAll(PageRequest.of(page, size)))
+                    .map(Page::getContent)
                     .orElseGet(ArrayList::new);
         } catch (Exception e) {
             success = false;
-            log.error("Unable to findAllPerson, PersonType: {}, Page:{} Size:{}, Exception: ", personType, page, size, e);
+            log.error("Unable to findAllPerson, Page:{} Size:{}, Exception: ", page, size, e);
             throw new ServiceException("Error findAllPerson paginated", e);
         } finally {
-            log.debug("Finished findAllPerson paginated, PersonType: {}, Page:{} Size:{}, success: {}", personType, page, size, success);
+            log.debug("Finished findAllPerson paginated, Page:{} Size:{}, success: {}", page, size, success);
         }
     }
 
     @Override
-    public List<Person> findAll(PersonType personType) throws ServiceException {
-        log.debug("Start findAllPerson PersonType: {}", personType);
+    public List<T> findAll() throws ServiceException {
+        log.debug("Start findAllPerson");
         boolean success = true;
         try {
             return Optional.of(this.personRepository)
-                    .map(repo -> repo.findAllByPersonType(personType))
+                    .map(JpaRepository::findAll)
                     .orElseGet(ArrayList::new);
         } catch (Exception e) {
             success = false;
-            log.error("Unable to findAllPerson PersonType: {}, Exception: ", personType, e);
+            log.error("Unable to findAllPerson, Exception: ", e);
             throw new ServiceException("Error findAllPerson", e);
         } finally {
-            log.debug("Finished findAllPerson PersonType: {}, success: {}", personType, success);
+            log.debug("Finished findAllPerson, success: {}", success);
         }
     }
 
     @Override
-    public Optional<Person> findById(PersonType personType, long id) throws ServiceException {
-        log.debug("Start getPerson PersonType: {}, Id: {}", personType, id);
+    public Optional<T> findById(long id) throws ServiceException {
+        log.debug("Start getPerson, Id: {}", id);
         boolean success = true;
         try {
-            return this.personRepository.findByIdAndPersonType(id, personType);
+            return this.personRepository.findById(id);
         } catch (Exception e) {
             success = false;
-            log.error("Unable to getPerson PersonType: {}, Id: {}, Exception: ", personType, id, e);
+            log.error("Unable to getPerson, Id: {}, Exception: ", id, e);
             throw new ServiceException("Error getPerson", e);
         } finally {
-            log.debug("Finished getPerson PersonType: {}, Id: {}, success: {}", personType, id, success);
+            log.debug("Finished getPerson, Id: {}, success: {}", id, success);
         }
     }
 
     @Override
-    public Optional<Person> update(long id, Person person) throws ServiceException {
+    public Optional<T> update(long id, T person) throws ServiceException {
         log.debug("Start updatePerson Id: {}, Person: {}", id, person);
         boolean success = true;
         try {
-            Optional<Person> personOpt = this.personRepository.findByIdAndPersonType(id, person.getPersonType());
+            Optional<T> personOpt = this.personRepository.findById(id);
             if (personOpt.isPresent()) {
                 person.setId(id);
 
@@ -128,25 +128,25 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public Optional<Person> delete(PersonType personType, long id) throws ServiceException {
-        log.debug("Start deletePerson PersonType: {}, Id: {}", personType, id);
+    public Optional<T> delete(long id) throws ServiceException {
+        log.debug("Start deletePerson , Id: {}", id);
         boolean success = true;
         try {
-            Optional<Person> personOpt = this.personRepository.findByIdAndPersonType(id, personType);
+            Optional<T> personOpt = this.personRepository.findById(id);
             if (personOpt.isPresent()) {
                 this.personRepository.deleteById(id);
             }
             return personOpt;
         } catch (Exception e) {
             success = false;
-            log.error("Unable to deletePerson PersonType: {}, Id: {}, Exception: ", personType, id, e);
+            log.error("Unable to deletePerson, Id: {}, Exception: ", id, e);
             throw new ServiceException("Error deletePerson", e);
         } finally {
-            log.debug("Finished deletePerson PersonType: {}, Id: {}, success: {}", personType, id, success);
+            log.debug("Finished deletePerson, Id: {}, success: {}", id, success);
         }
     }
 
-    private void validateAndFormatPhoneNumber(Person person) throws IllegalArgumentException {
+    private void validateAndFormatPhoneNumber(AbstractPerson person) throws IllegalArgumentException {
         try {
             PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
 
@@ -168,8 +168,8 @@ public class PersonServiceImpl implements PersonService {
         }
     }
 
-    private void validatePhoneNumberUniqueness(Person person) {
-        Optional<Person> existingPersonOpt = personRepository.findByPhoneNumber(person.getPhoneNumber());
+    private void validatePhoneNumberUniqueness(AbstractPerson person) {
+        Optional<T> existingPersonOpt = personRepository.findByPhoneNumber(person.getPhoneNumber());
 
         boolean invalid = existingPersonOpt.isPresent();
         if (person.getId() > 0) {
@@ -181,8 +181,8 @@ public class PersonServiceImpl implements PersonService {
         }
     }
 
-    private void validateEmailUniqueness(Person person) {
-        Optional<Person> existingPersonOpt = personRepository.findByEmail(person.getEmail());
+    private void validateEmailUniqueness(AbstractPerson person) {
+        Optional<T> existingPersonOpt = personRepository.findByEmail(person.getEmail());
 
         boolean invalid = existingPersonOpt.isPresent();
         if (person.getId() > 0) {
@@ -194,9 +194,9 @@ public class PersonServiceImpl implements PersonService {
         }
     }
 
-    private boolean checkNotMatchId(Person person, Optional<Person> existingPersonOpt) {
+    private boolean checkNotMatchId(AbstractPerson person, Optional<T> existingPersonOpt) {
         return existingPersonOpt
-                .map(Person::getId)
+                .map(AbstractPerson::getId)
                 .filter(id -> person.getId() != id)
                 .isPresent();
     }

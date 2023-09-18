@@ -2,6 +2,7 @@ package com.tamanna.challenge.interview.calendar.services;
 
 import com.tamanna.challenge.interview.calendar.entities.Interviewer;
 import com.tamanna.challenge.interview.calendar.entities.Schedule;
+import com.tamanna.challenge.interview.calendar.exceptions.NotFoundException;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import com.tamanna.challenge.interview.calendar.repositories.ScheduleRepository;
 import com.tamanna.challenge.interview.calendar.services.impl.InterviewerScheduleServiceImpl;
@@ -28,19 +29,32 @@ import static org.mockito.ArgumentMatchers.eq;
 @ExtendWith(MockitoExtension.class)
 class PersonScheduleServiceTests {
     @Mock
+    private InterviewerService interviewerService;
+    @Mock
     private ScheduleRepository scheduleRepository;
 
     @InjectMocks
     private InterviewerScheduleServiceImpl personScheduleService;
 
     @Test
+    void addScheduleTest_PersonNotFound() throws ServiceException {
+        Interviewer person = getNewPersonInterviewer();
+        Schedule schedule = getNewSchedule();
+
+        Mockito.when(interviewerService.findById(eq(person.getId()))).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(NotFoundException.class, () -> personScheduleService.addSchedule(person.getId(), schedule));
+    }
+
+    @Test
     void addScheduleTest_ScheduleAlreadyExits() throws ServiceException {
         Interviewer person = getNewPersonInterviewer();
         Schedule schedule = getNewSchedule();
 
+        Mockito.when(interviewerService.findById(eq(person.getId()))).thenReturn(Optional.of(person));
         Mockito.when(scheduleRepository.findByPersonIdAndDayAndHour(eq(person.getId()), eq(schedule.getDay()), eq(schedule.getHour()))).thenReturn(Optional.of(schedule));
 
-        Assertions.assertThrows(IllegalArgumentException.class, () -> personScheduleService.addSchedule(person, schedule));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> personScheduleService.addSchedule(person.getId(), schedule));
     }
 
     @Test
@@ -48,12 +62,12 @@ class PersonScheduleServiceTests {
         Interviewer person = getNewPersonInterviewer();
         Schedule schedule = getNewSchedule();
 
+        Mockito.when(interviewerService.findById(eq(person.getId()))).thenReturn(Optional.of(person));
         Mockito.when(scheduleRepository.findByPersonIdAndDayAndHour(eq(person.getId()), eq(schedule.getDay()), eq(schedule.getHour()))).thenReturn(Optional.empty());
         Mockito.when(scheduleRepository.save(any())).thenAnswer(answer -> answer.getArgument(0));
 
-        Optional<Schedule> scheduleOpt = personScheduleService.addSchedule(person, schedule);
-        Assertions.assertTrue(scheduleOpt.isPresent());
-        Assertions.assertEquals(scheduleOpt.get(), schedule);
+        Schedule scheduleUpdated = personScheduleService.addSchedule(person.getId(), schedule);
+        Assertions.assertEquals(scheduleUpdated, schedule);
     }
 
     @Test
@@ -95,7 +109,7 @@ class PersonScheduleServiceTests {
     }
 
     @Test
-    void updatePersonTest_DuplicatedSchedule() throws ServiceException {
+    void updatePersonTest_DuplicatedSchedule() {
         Interviewer personA = getNewPersonInterviewer(1L);
         personA.setScheduleList(new ArrayList<>());
 

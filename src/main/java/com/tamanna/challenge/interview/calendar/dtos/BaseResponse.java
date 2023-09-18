@@ -1,0 +1,18 @@
+package com.tamanna.challenge.interview.calendar.dtos;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Builder;
+import lombok.Data;
+import org.springframework.http.HttpStatus;
+
+/**
+ * @author tlferreira
+ */
+@Builder
+@Data
+public class BaseResponse <T> {
+    private HttpStatus status;
+    private String message;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private T response;
+}

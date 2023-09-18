@@ -40,7 +40,7 @@ class PersonServiceTests {
     private InterviewerServiceImpl personService;
 
     @Test
-    void createPersonTest_InvalidPhoneNumber() throws ServiceException {
+    void createPersonTest_InvalidPhoneNumber() {
         Interviewer person = getNewPersonInterviewer();
         person.setPhoneNumber("123abcd");
 
@@ -48,7 +48,7 @@ class PersonServiceTests {
     }
 
     @Test
-    void createPersonTest_PhoneNumberAlreadyExists() throws ServiceException {
+    void createPersonTest_PhoneNumberAlreadyExists() {
         Interviewer person = getNewPersonInterviewer();
 
         //returns the same object for simplicity’s sake
@@ -58,7 +58,7 @@ class PersonServiceTests {
     }
 
     @Test
-    void createPersonTest_EmailAlreadyExists() throws ServiceException {
+    void createPersonTest_EmailAlreadyExists() {
         Interviewer person = getNewPersonInterviewer();
 
         Mockito.when(personRepository.findByPhoneNumber(eq(person.getPhoneNumber()))).thenReturn(Optional.empty());
@@ -173,7 +173,7 @@ class PersonServiceTests {
     }
 
     @Test
-    void updatePersonTest_InvalidPhoneNumber() throws ServiceException {
+    void updatePersonTest_InvalidPhoneNumber() {
         Interviewer personA = getNewPersonInterviewer(1L);
         Interviewer personUpdate = getNewPersonInterviewer();
         personUpdate.setPhoneNumber("123123");
@@ -184,7 +184,7 @@ class PersonServiceTests {
     }
 
     @Test
-    void updatePersonTest_PhoneNumberAlreadyExists() throws ServiceException {
+    void updatePersonTest_PhoneNumberAlreadyExists() {
         Interviewer personA = getNewPersonInterviewer(1L);
         Interviewer personB = getNewPersonInterviewer(2L);
         personB.setPhoneNumber("+351-911-222-333");
@@ -201,7 +201,7 @@ class PersonServiceTests {
     }
 
     @Test
-    void updatePersonTest_EmailAlreadyExists() throws ServiceException {
+    void updatePersonTest_EmailAlreadyExists() {
         Interviewer personA = getNewPersonInterviewer(1L);
         Interviewer personB = getNewPersonInterviewer(2L);
         personB.setEmail("test@email.com");

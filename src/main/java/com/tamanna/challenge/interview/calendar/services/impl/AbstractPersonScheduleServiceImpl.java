@@ -3,10 +3,11 @@ package com.tamanna.challenge.interview.calendar.services.impl;
 import com.tamanna.challenge.interview.calendar.entities.AbstractPerson;
 import com.tamanna.challenge.interview.calendar.entities.Schedule;
 import com.tamanna.challenge.interview.calendar.entities.enums.PersonType;
+import com.tamanna.challenge.interview.calendar.exceptions.NotFoundException;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
-import com.tamanna.challenge.interview.calendar.repositories.PersonRepository;
 import com.tamanna.challenge.interview.calendar.repositories.ScheduleRepository;
 import com.tamanna.challenge.interview.calendar.services.PersonScheduleService;
+import com.tamanna.challenge.interview.calendar.services.PersonService;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -19,16 +20,18 @@ import java.util.Optional;
  */
 @Log4j2
 @AllArgsConstructor
-public abstract class AbstractPersonScheduleServiceImpl<T extends AbstractPerson> implements PersonScheduleService<T> {
+public abstract class AbstractPersonScheduleServiceImpl<T extends AbstractPerson> implements PersonScheduleService {
     private final ScheduleRepository scheduleRepository;
-    private final PersonRepository<T> personRepository;
+    private final PersonService<T> personService;
     private final PersonType personType;
 
     @Override
-    public Optional<Schedule> addSchedule(T person, Schedule schedule) throws ServiceException {
-        log.debug("Start addSchedule {} to Person PersonType: {}, Person: {}", schedule, personType, person);
+    public Schedule addSchedule(long personId, Schedule schedule) throws ServiceException {
+        log.debug("Start addSchedule {} to Person PersonType: {}, Id: {}", schedule, personType, personId);
         boolean success = true;
         try {
+            T person = getPerson(personId);
+
             validateScheduleUniqueness(person.getId(), schedule);
 
             if (person.getScheduleList() == null) {
@@ -37,33 +40,28 @@ public abstract class AbstractPersonScheduleServiceImpl<T extends AbstractPerson
 
             schedule.setPerson(person);
 
-            return Optional.of(scheduleRepository.save(schedule));
-        } catch (IllegalArgumentException e) {
+            return scheduleRepository.save(schedule);
+        } catch (NotFoundException | IllegalArgumentException | ServiceException e) {
             success = false;
-            log.error("Unable to addSchedule {} to Person PersonType: {}, Person: {}, Illegal Argument, Exception: ", schedule, personType, person, e);
+            log.error("Unable to addSchedule {} to Person PersonType: {}, Id: {}, Exception: ", schedule, personType, personId, e);
             throw e;
         } catch (Exception e) {
             success = false;
-            log.error("Unable to addSchedule {} to Person PersonType: {}, Person: {}, Exception: ", schedule, personType, person, e);
+            log.error("Unable to addSchedule {} to Person PersonType: {}, Id: {}, Exception: ", schedule, personType, personId, e);
             throw new ServiceException("Error addSchedule", e);
         } finally {
-            log.debug("Finished addSchedule {} to Person PersonType: {}, Person: {}, success: {}", schedule, personType, person, success);
+            log.debug("Finished addSchedule {} to Person PersonType: {}, Id: {}, success: {}", schedule, personType, personId, success);
         }
     }
 
     @Override
-    public Optional<List<Schedule>> findAll(long personId) throws ServiceException {
+    public List<Schedule> findAll(long personId) throws ServiceException {
         log.debug("Start getSchedules All from Person PersonType: {}, Id: {}", personType, personId);
         boolean success = true;
         try {
-            Optional<T> personOpt = personRepository.findById(personId);
-            if(personOpt.isPresent()){
-                T person = personOpt.get();
-                return Optional.of(person.getScheduleList() == null ? new ArrayList<>() : person.getScheduleList());
-            }
-            success = false;
-            return Optional.empty();
-        } catch (IllegalArgumentException e) {
+            T person = getPerson(personId);
+            return person.getScheduleList() == null ? new ArrayList<>() : person.getScheduleList();
+        } catch (NotFoundException | IllegalArgumentException | ServiceException e) {
             success = false;
             log.error("Unable to getSchedules All from Person PersonType: {}, Id: {}, Illegal Argument, Exception: ", personType, personId, e);
             throw e;
@@ -74,6 +72,12 @@ public abstract class AbstractPersonScheduleServiceImpl<T extends AbstractPerson
         } finally {
             log.debug("Finished getSchedules All from Person PersonType: {}, Id: {}, success: {}", personType, personId, success);
         }
+    }
+
+    private T getPerson(long personId) throws ServiceException {
+        return personService
+                .findById(personId)
+                .orElseThrow(() -> new NotFoundException(String.format("Unable to find %s with Id %s", personType, personId)));
     }
 
     @Override
@@ -109,7 +113,7 @@ public abstract class AbstractPersonScheduleServiceImpl<T extends AbstractPerson
             return scheduleOpt;
         } catch (IllegalArgumentException e) {
             success = false;
-            log.error("Unable to updateSchedule ScheduleId: {}, Schedule:{} from Person PersonType: {}, Id: {}, Illegal Argument, Exception: ",  scheduleId, schedule, personType, personId, e);
+            log.error("Unable to updateSchedule ScheduleId: {}, Schedule:{} from Person PersonType: {}, Id: {}, Illegal Argument, Exception: ", scheduleId, schedule, personType, personId, e);
             throw e;
         } catch (Exception e) {
             success = false;

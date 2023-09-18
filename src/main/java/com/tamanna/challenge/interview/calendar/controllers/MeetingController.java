@@ -1,6 +1,7 @@
 package com.tamanna.challenge.interview.calendar.controllers;
 
 import com.tamanna.challenge.interview.calendar.dtos.AvailableMeetingDTO;
+import com.tamanna.challenge.interview.calendar.dtos.BaseResponse;
 import com.tamanna.challenge.interview.calendar.entities.AvailableMeeting;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import com.tamanna.challenge.interview.calendar.services.MeetingService;
@@ -21,6 +22,7 @@ import javax.validation.constraints.NotEmpty;
 import java.util.List;
 
 import static com.tamanna.challenge.interview.calendar.controllers.ControllerConstants.*;
+import static com.tamanna.challenge.interview.calendar.controllers.ControllerUtils.buildResponse;
 
 /**
  * @author tlferreira
@@ -34,13 +36,12 @@ public class MeetingController {
     private final MeetingService meetingService;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<AvailableMeetingDTO>> query(@Min(value = 1, message = INVALID_ID_MESSAGE) @RequestParam(CANDIDATE_ID_REQ_PARAM) long candidateId, @NotEmpty @RequestParam(INTERVIEWER_ID_REQ_PARAM) List<Long> interviewerIdList) throws ServiceException {
-        List<AvailableMeeting> resultList = this.meetingService.queryMeeting(candidateId, interviewerIdList);
-
-        return new ResponseEntity<>(mapMapEntityDTO(resultList), HttpStatus.CREATED);
+    public ResponseEntity<BaseResponse<List<AvailableMeetingDTO>>> query(@Min(value = 1, message = INVALID_ID_MESSAGE) @RequestParam(CANDIDATE_ID_REQ_PARAM) long candidateId, @NotEmpty @RequestParam(INTERVIEWER_ID_REQ_PARAM) List<Long> interviewerIdList) throws ServiceException {
+        List<AvailableMeeting> availableMeetings = this.meetingService.queryMeeting(candidateId, interviewerIdList);
+        return buildResponse(mapListEntityDTO(availableMeetings), availableMeetings.isEmpty() ? HttpStatus.NO_CONTENT : HttpStatus.OK);
     }
 
-    List<AvailableMeetingDTO> mapMapEntityDTO(List<AvailableMeeting> entityList) {
+    List<AvailableMeetingDTO> mapListEntityDTO(List<AvailableMeeting> entityList) {
         return modelMapper.map(entityList, new TypeToken<List<AvailableMeetingDTO>>() {
         }.getType());
     }

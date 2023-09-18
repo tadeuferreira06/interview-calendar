@@ -15,6 +15,8 @@ public class ControllerConstants {
     public static final String PAGE_PARAM = "page";
     public static final String PAGE_DEFAULT = "0";
     public static final String SIZE_PARAM = "size";
+    public static final String INTERVIEWER_NOT_FOUND = "Interviewer not found";
+    public static final String CANDIDATE_NOT_FOUND = "Candidate not found";
 
     private ControllerConstants() {
         //private constructor

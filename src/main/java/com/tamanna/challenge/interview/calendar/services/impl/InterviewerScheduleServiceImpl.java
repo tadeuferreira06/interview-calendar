@@ -2,9 +2,9 @@ package com.tamanna.challenge.interview.calendar.services.impl;
 
 import com.tamanna.challenge.interview.calendar.entities.Interviewer;
 import com.tamanna.challenge.interview.calendar.entities.enums.PersonType;
-import com.tamanna.challenge.interview.calendar.repositories.InterviewerRepository;
 import com.tamanna.challenge.interview.calendar.repositories.ScheduleRepository;
 import com.tamanna.challenge.interview.calendar.services.InterviewerScheduleService;
+import com.tamanna.challenge.interview.calendar.services.InterviewerService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 @Log4j2
 @Service("InterviewerScheduleService")
 public class InterviewerScheduleServiceImpl extends AbstractPersonScheduleServiceImpl<Interviewer> implements InterviewerScheduleService {
-    public InterviewerScheduleServiceImpl(ScheduleRepository scheduleRepository, InterviewerRepository interviewerRepository) {
-        super(scheduleRepository, interviewerRepository, PersonType.INTERVIEWER);
+    public InterviewerScheduleServiceImpl(ScheduleRepository scheduleRepository, InterviewerService interviewerService) {
+        super(scheduleRepository, interviewerService, PersonType.INTERVIEWER);
     }
 }

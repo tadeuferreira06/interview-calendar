@@ -1,8 +1,10 @@
 package com.tamanna.challenge.interview.calendar.controllers;
 
+import com.tamanna.challenge.interview.calendar.dtos.BaseResponse;
 import com.tamanna.challenge.interview.calendar.dtos.PersonDTO;
 import com.tamanna.challenge.interview.calendar.dtos.PersonInfoDTO;
 import com.tamanna.challenge.interview.calendar.entities.Interviewer;
+import com.tamanna.challenge.interview.calendar.exceptions.NotFoundException;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import com.tamanna.challenge.interview.calendar.services.InterviewerService;
 import lombok.AllArgsConstructor;
@@ -19,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.tamanna.challenge.interview.calendar.controllers.ControllerConstants.*;
+import static com.tamanna.challenge.interview.calendar.controllers.ControllerUtils.buildResponse;
 
 /**
  * @author tlferreira
@@ -32,37 +35,32 @@ public class InterviewerController {
     private final InterviewerService interviewerService;
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PersonDTO> createPerson(@RequestBody PersonInfoDTO personInfoDTO) throws ServiceException {
+    public ResponseEntity<BaseResponse<PersonDTO>> createPerson(@RequestBody PersonInfoDTO personInfoDTO) throws ServiceException {
         Interviewer entity = interviewerService.createPerson(mapDTOEntity(personInfoDTO));
-
-        return new ResponseEntity<>(mapEntityDTO(entity), HttpStatus.CREATED);
+        return buildResponse(mapEntityDTO(entity), HttpStatus.CREATED);
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<PersonDTO>> listPerson(@Min(value = 0, message = INVALID_PAGE_MESSAGE) @RequestParam(value = PAGE_PARAM, defaultValue = PAGE_DEFAULT) int page, @Min(value = 1, message = INVALID_SIZE_MESSAGE) @RequestParam(value = SIZE_PARAM, required = false) Integer size) throws ServiceException {
+    public ResponseEntity<BaseResponse<List<PersonDTO>>> listPerson(@Min(value = 0, message = INVALID_PAGE_MESSAGE) @RequestParam(value = PAGE_PARAM, defaultValue = PAGE_DEFAULT) int page, @Min(value = 1, message = INVALID_SIZE_MESSAGE) @RequestParam(value = SIZE_PARAM, required = false) Integer size) throws ServiceException {
         List<Interviewer> entityList = size == null ? interviewerService.findAll() : interviewerService.findAllPageable(page, size);
-
-        return new ResponseEntity<>(mapListEntityDTO(entityList), HttpStatus.OK);
+        return buildResponse(mapListEntityDTO(entityList), entityList.isEmpty() ? HttpStatus.NO_CONTENT : HttpStatus.OK);
     }
 
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PersonDTO> getPerson(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id) throws ServiceException {
+    public ResponseEntity<BaseResponse<PersonDTO>> getPerson(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id) throws ServiceException {
         Optional<Interviewer> entityOpt = interviewerService.findById(id);
-
         return handleOptResponse(entityOpt);
     }
 
     @PutMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PersonDTO> putPerson(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id, @RequestBody PersonInfoDTO personInfoDTO) throws ServiceException {
+    public ResponseEntity<BaseResponse<PersonDTO>> putPerson(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id, @RequestBody PersonInfoDTO personInfoDTO) throws ServiceException {
         Optional<Interviewer> entityOpt = interviewerService.update(id, mapDTOEntity(personInfoDTO));
-
         return handleOptResponse(entityOpt);
     }
 
     @DeleteMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PersonDTO> deletePerson(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id) throws ServiceException {
+    public ResponseEntity<BaseResponse<PersonDTO>> deletePerson(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id) throws ServiceException {
         Optional<Interviewer> entityOpt = interviewerService.delete(id);
-
         return handleOptResponse(entityOpt);
     }
 
@@ -79,9 +77,9 @@ public class InterviewerController {
         }.getType());
     }
 
-    private ResponseEntity<PersonDTO> handleOptResponse(Optional<Interviewer> entityOpt) {
+    private ResponseEntity<BaseResponse<PersonDTO>> handleOptResponse(Optional<Interviewer> entityOpt) {
         return entityOpt
-                .map(entity -> new ResponseEntity<>(mapEntityDTO(entity), HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+                .map(entity -> buildResponse(mapEntityDTO(entity), HttpStatus.OK))
+                .orElseThrow(() -> new NotFoundException(INTERVIEWER_NOT_FOUND));
     }
 }

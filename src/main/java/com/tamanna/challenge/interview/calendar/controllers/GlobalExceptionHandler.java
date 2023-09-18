@@ -8,6 +8,8 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.MissingRequestHeaderException;
@@ -53,8 +55,7 @@ public class GlobalExceptionHandler {
         List<ApiError> errors = exception
                 .getConstraintViolations()
                 .stream()
-                .map(ConstraintViolation::getMessage)
-                .map(message -> ApiError.builder().parameter("Constraint").message(message).build())
+                .map(constraintViolation -> ApiError.builder().message(constraintViolation.getMessage()).build())
                 .toList();
         return validationErrorBuilder(exception, errors);
     }
@@ -63,7 +64,6 @@ public class GlobalExceptionHandler {
     @ResponseBody
     public ResponseEntity<BaseResponse<List<ApiError>>> handleConstraintViolationException(MethodArgumentNotValidException exception) {
         List<ApiError> errors = exception
-                .getBindingResult()
                 .getFieldErrors()
                 .stream()
                 .map(fieldError -> ApiError.builder().parameter(fieldError.getField()).message(fieldError.getDefaultMessage()).build())
@@ -72,11 +72,11 @@ public class GlobalExceptionHandler {
     }
 
     private ResponseEntity<BaseResponse<List<ApiError>>> validationErrorBuilder(Exception exception, List<ApiError> errors) {
-        String errorMessage = "Error while validating method params: " + exception.getMessage();
-        log.error(errorMessage);
+        String errorMessage = "Error while validating method params";
+        log.error(errorMessage, exception);
         return buildResponse(HttpStatus.BAD_REQUEST, errorMessage, errors);
     }
-
+    
     @ExceptionHandler
     @ResponseBody
     public <T> ResponseEntity<BaseResponse<T>> handleNotFoundException(NotFoundException exception) {
@@ -99,7 +99,7 @@ public class GlobalExceptionHandler {
     @ResponseBody
     public <T> ResponseEntity<BaseResponse<T>> handleException(Exception exception) {
         log.error("Internal Server Error, Exception: ", exception);
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }

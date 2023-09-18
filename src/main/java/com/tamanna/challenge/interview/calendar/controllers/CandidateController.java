@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import java.util.List;
 import java.util.Optional;
@@ -35,13 +36,14 @@ public class CandidateController {
     private final CandidateService candidateService;
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<BaseResponse<PersonDTO>> createPerson(@RequestBody PersonInfoDTO personInfoDTO) throws ServiceException {
+    public ResponseEntity<BaseResponse<PersonDTO>> createPerson(@Valid @RequestBody PersonInfoDTO personInfoDTO) throws ServiceException {
         Candidate entity = candidateService.createPerson(mapDTOEntity(personInfoDTO));
         return buildResponse(mapEntityDTO(entity), HttpStatus.CREATED);
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<BaseResponse<List<PersonDTO>>> listPerson(@Min(value = 0, message = INVALID_PAGE_MESSAGE) @RequestParam(value = PAGE_PARAM, defaultValue = PAGE_DEFAULT) int page, @Min(value = 1, message = INVALID_SIZE_MESSAGE) @RequestParam(value = SIZE_PARAM, required = false) Integer size) throws ServiceException {
+    public ResponseEntity<BaseResponse<List<PersonDTO>>> listPerson(@Min(value = 0, message = INVALID_PAGE_MESSAGE) @RequestParam(value = PAGE_PARAM, defaultValue = PAGE_DEFAULT) int page,
+                                                                    @Min(value = 1, message = INVALID_SIZE_MESSAGE) @RequestParam(value = SIZE_PARAM, required = false) Integer size) throws ServiceException {
         List<Candidate> entityList = size == null ? candidateService.findAll() : candidateService.findAllPageable(page, size);
         return buildResponse(mapListEntityDTO(entityList), entityList.isEmpty() ? HttpStatus.NO_CONTENT : HttpStatus.OK);
     }
@@ -53,7 +55,8 @@ public class CandidateController {
     }
 
     @PutMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<BaseResponse<PersonDTO>> putPerson(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id, @RequestBody PersonInfoDTO personInfoDTO) throws ServiceException {
+    public ResponseEntity<BaseResponse<PersonDTO>> putPerson(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id,
+                                                             @Valid @RequestBody PersonInfoDTO personInfoDTO) throws ServiceException {
         Optional<Candidate> entityOpt = candidateService.update(id, mapDTOEntity(personInfoDTO));
         return handleOptResponse(entityOpt);
     }

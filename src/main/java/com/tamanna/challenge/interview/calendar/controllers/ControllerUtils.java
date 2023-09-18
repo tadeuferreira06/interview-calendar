@@ -14,6 +14,10 @@ public class ControllerUtils {
         //private
     }
 
+    public static <T> ResponseEntity<BaseResponse<T>> buildResponse(HttpStatus status) {
+        return buildResponse(status, status.getReasonPhrase());
+    }
+
     public static <T> ResponseEntity<BaseResponse<T>> buildResponse(T responseObject, HttpStatus status) {
         return buildResponse(status, DEFAULT_MESSAGE, responseObject);
     }
@@ -25,7 +29,7 @@ public class ControllerUtils {
     public static <T> ResponseEntity<BaseResponse<T>> buildResponse(HttpStatus status, String message, T responseObject) {
         return new ResponseEntity<>(BaseResponse
                 .<T>builder()
-                .status(status)
+                .status(status.value())
                 .message(message)
                 .response(responseObject)
                 .build(),

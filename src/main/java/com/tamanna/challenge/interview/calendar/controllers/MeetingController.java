@@ -36,7 +36,8 @@ public class MeetingController {
     private final MeetingService meetingService;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<BaseResponse<List<AvailableMeetingDTO>>> query(@Min(value = 1, message = INVALID_ID_MESSAGE) @RequestParam(CANDIDATE_ID_REQ_PARAM) long candidateId, @NotEmpty @RequestParam(INTERVIEWER_ID_REQ_PARAM) List<Long> interviewerIdList) throws ServiceException {
+    public ResponseEntity<BaseResponse<List<AvailableMeetingDTO>>> query(@Min(value = 1, message = INVALID_ID_MESSAGE) @RequestParam(CANDIDATE_ID_REQ_PARAM) long candidateId,
+                                                                         @NotEmpty @RequestParam(INTERVIEWER_ID_REQ_PARAM) List<Long> interviewerIdList) throws ServiceException {
         List<AvailableMeeting> availableMeetings = this.meetingService.queryMeeting(candidateId, interviewerIdList);
         return buildResponse(mapListEntityDTO(availableMeetings), availableMeetings.isEmpty() ? HttpStatus.NO_CONTENT : HttpStatus.OK);
     }

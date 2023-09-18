@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +36,8 @@ public class InterviewerScheduleController {
     private final InterviewerScheduleService personScheduleService;
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<BaseResponse<ScheduleDTO>> createSchedule(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id, @RequestBody ScheduleInfoDTO scheduleInfoDTO) throws ServiceException {
+    public ResponseEntity<BaseResponse<ScheduleDTO>> createSchedule(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id,
+                                                                    @Valid @RequestBody ScheduleInfoDTO scheduleInfoDTO) throws ServiceException {
         Schedule schedule = personScheduleService.addSchedule(id, this.mapDTOEntity(scheduleInfoDTO));
         return buildResponse(mapEntityDTO(schedule), HttpStatus.CREATED);
     }
@@ -47,19 +49,23 @@ public class InterviewerScheduleController {
     }
 
     @GetMapping(path = "/{scheduleId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<BaseResponse<ScheduleDTO>> getSchedule(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id, @Min(value = 1, message = INVALID_SCHEDULE_ID_MESSAGE) @PathVariable(value = SCHEDULE_ID_PATH_VARIABLE) long scheduleId) throws ServiceException {
+    public ResponseEntity<BaseResponse<ScheduleDTO>> getSchedule(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id,
+                                                                 @Min(value = 1, message = INVALID_SCHEDULE_ID_MESSAGE) @PathVariable(value = SCHEDULE_ID_PATH_VARIABLE) long scheduleId) throws ServiceException {
         Optional<Schedule> scheduleOpt = personScheduleService.findById(id, scheduleId);
         return handleOptResponse(scheduleOpt);
     }
 
     @PutMapping(path = "/{scheduleId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<BaseResponse<ScheduleDTO>> putSchedule(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id, @Min(value = 1, message = INVALID_SCHEDULE_ID_MESSAGE) @PathVariable(value = SCHEDULE_ID_PATH_VARIABLE) long scheduleId, @RequestBody ScheduleInfoDTO scheduleInfoDTO) throws ServiceException {
+    public ResponseEntity<BaseResponse<ScheduleDTO>> putSchedule(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id,
+                                                                 @Min(value = 1, message = INVALID_SCHEDULE_ID_MESSAGE) @PathVariable(value = SCHEDULE_ID_PATH_VARIABLE) long scheduleId,
+                                                                 @Valid  @RequestBody ScheduleInfoDTO scheduleInfoDTO) throws ServiceException {
         Optional<Schedule> scheduleOpt = personScheduleService.update(id, scheduleId, mapDTOEntity(scheduleInfoDTO));
         return handleOptResponse(scheduleOpt);
     }
 
     @DeleteMapping(path = "/{scheduleId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<BaseResponse<ScheduleDTO>> deleteSchedule(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id, @Min(value = 1, message = INVALID_SCHEDULE_ID_MESSAGE) @PathVariable(value = SCHEDULE_ID_PATH_VARIABLE) long scheduleId) throws ServiceException {
+    public ResponseEntity<BaseResponse<ScheduleDTO>> deleteSchedule(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id,
+                                                                    @Min(value = 1, message = INVALID_SCHEDULE_ID_MESSAGE) @PathVariable(value = SCHEDULE_ID_PATH_VARIABLE) long scheduleId) throws ServiceException {
         Optional<Schedule> scheduleOpt = personScheduleService.delete(id, scheduleId);
         return handleOptResponse(scheduleOpt);
     }

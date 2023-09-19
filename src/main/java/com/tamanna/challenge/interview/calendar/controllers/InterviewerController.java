@@ -3,9 +3,10 @@ package com.tamanna.challenge.interview.calendar.controllers;
 import com.tamanna.challenge.interview.calendar.dtos.BaseResponse;
 import com.tamanna.challenge.interview.calendar.dtos.PersonDTO;
 import com.tamanna.challenge.interview.calendar.dtos.PersonInfoDTO;
-import com.tamanna.challenge.interview.calendar.entities.Interviewer;
+import com.tamanna.challenge.interview.calendar.entities.jpa.Interviewer;
 import com.tamanna.challenge.interview.calendar.exceptions.NotFoundException;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
+import com.tamanna.challenge.interview.calendar.logging.MDCLogging;
 import com.tamanna.challenge.interview.calendar.services.InterviewerService;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -37,6 +38,7 @@ public class InterviewerController {
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<BaseResponse<PersonDTO>> createPerson(@Valid @RequestBody PersonInfoDTO personInfoDTO) throws ServiceException {
+        MDCLogging.putObjectMDC("createInterviewer{}");
         Interviewer entity = interviewerService.createPerson(mapDTOEntity(personInfoDTO));
         return buildResponse(mapEntityDTO(entity), HttpStatus.CREATED);
     }
@@ -44,12 +46,14 @@ public class InterviewerController {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<BaseResponse<List<PersonDTO>>> listPerson(@Min(value = 0, message = INVALID_PAGE_MESSAGE) @RequestParam(value = PAGE_PARAM, defaultValue = PAGE_DEFAULT) int page,
                                                                     @Min(value = 1, message = INVALID_SIZE_MESSAGE) @RequestParam(value = SIZE_PARAM, required = false) Integer size) throws ServiceException {
+        MDCLogging.putObjectMDC("listInterviewer{Page[%s];Size[%s]}", page, size);
         List<Interviewer> entityList = size == null ? interviewerService.findAll() : interviewerService.findAllPageable(page, size);
         return buildResponse(mapListEntityDTO(entityList), entityList.isEmpty() ? HttpStatus.NO_CONTENT : HttpStatus.OK);
     }
 
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<BaseResponse<PersonDTO>> getPerson(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id) throws ServiceException {
+        MDCLogging.putObjectMDC("getInterviewer{id[%s]}", id);
         Optional<Interviewer> entityOpt = interviewerService.findById(id);
         return handleOptResponse(entityOpt);
     }
@@ -57,12 +61,14 @@ public class InterviewerController {
     @PutMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<BaseResponse<PersonDTO>> putPerson(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id,
                                                              @Valid @RequestBody PersonInfoDTO personInfoDTO) throws ServiceException {
+        MDCLogging.putObjectMDC("putInterviewer{id[%s]}", id);
         Optional<Interviewer> entityOpt = interviewerService.update(id, mapDTOEntity(personInfoDTO));
         return handleOptResponse(entityOpt);
     }
 
     @DeleteMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<BaseResponse<PersonDTO>> deletePerson(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id) throws ServiceException {
+        MDCLogging.putObjectMDC("deleteInterviewer{id[%s]}", id);
         Optional<Interviewer> entityOpt = interviewerService.delete(id);
         return handleOptResponse(entityOpt);
     }

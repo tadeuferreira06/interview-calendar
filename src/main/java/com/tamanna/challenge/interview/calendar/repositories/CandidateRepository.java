@@ -1,7 +1,7 @@
 package com.tamanna.challenge.interview.calendar.repositories;
 
 
-import com.tamanna.challenge.interview.calendar.entities.Candidate;
+import com.tamanna.challenge.interview.calendar.entities.jpa.Candidate;
 import org.springframework.stereotype.Repository;
 
 @Repository

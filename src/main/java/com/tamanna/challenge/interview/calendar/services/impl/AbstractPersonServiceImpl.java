@@ -3,7 +3,8 @@ package com.tamanna.challenge.interview.calendar.services.impl;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.tamanna.challenge.interview.calendar.configurations.PhoneNumberValidationKeys;
-import com.tamanna.challenge.interview.calendar.entities.AbstractPerson;
+import com.tamanna.challenge.interview.calendar.entities.jpa.AbstractPerson;
+import com.tamanna.challenge.interview.calendar.exceptions.NotModifiedException;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import com.tamanna.challenge.interview.calendar.repositories.PersonRepository;
 import com.tamanna.challenge.interview.calendar.services.PersonService;
@@ -22,13 +23,13 @@ import java.util.Optional;
  */
 @Log4j2
 @AllArgsConstructor
-public abstract class AbstractPersonServiceImpl<T extends AbstractPerson, E extends PersonRepository<T>> implements PersonService <T> {
+public abstract class AbstractPersonServiceImpl<T extends AbstractPerson, E extends PersonRepository<T>> implements PersonService<T> {
     private final E personRepository;
     private final PhoneNumberValidationKeys phoneNumberValidationKeys;
 
     @Override
     public T createPerson(T person) throws ServiceException {
-        log.debug("Start creating Person {}", person);
+        log.debug("Start creatingPerson");
         boolean success = true;
         try {
             validateAndFormatPhoneNumber(person);
@@ -38,20 +39,21 @@ public abstract class AbstractPersonServiceImpl<T extends AbstractPerson, E exte
             return personRepository.save(person);
         } catch (IllegalArgumentException e) {
             success = false;
-            log.error("Unable to create Person {}, Illegal Argument, Exception: ", person, e);
+            log.error("Unable to createPerson, Illegal Argument, Exception: ", e);
             throw e;
         } catch (Exception e) {
             success = false;
-            log.error("Unable to create Person {}, Exception: ", person, e);
-            throw new ServiceException("Error creating person", e);
+            log.error("Unable to createPerson, Exception: ", e);
+            throw new ServiceException("Error creatingPerson", e);
         } finally {
-            log.debug("Finished creating Person {}, success: {}", person, success);
+            log.debug("Finished creatingPerson, success: {}", success);
         }
     }
 
     @Override
     public List<T> findAllPageable(int page, int size) throws ServiceException {
-        log.debug("Start findAllPerson paginated, Page:{} Size:{}", page, size);
+
+        log.debug("Start findAllPerson paginated");
         boolean success = true;
         try {
             return Optional.of(this.personRepository)
@@ -60,10 +62,10 @@ public abstract class AbstractPersonServiceImpl<T extends AbstractPerson, E exte
                     .orElseGet(ArrayList::new);
         } catch (Exception e) {
             success = false;
-            log.error("Unable to findAllPerson, Page:{} Size:{}, Exception: ", page, size, e);
+            log.error("Unable to findAllPerson, Exception: ", e);
             throw new ServiceException("Error findAllPerson paginated", e);
         } finally {
-            log.debug("Finished findAllPerson paginated, Page:{} Size:{}, success: {}", page, size, success);
+            log.debug("Finished findAllPerson paginated, success: {}", success);
         }
     }
 
@@ -103,22 +105,22 @@ public abstract class AbstractPersonServiceImpl<T extends AbstractPerson, E exte
 
     @Override
     public Optional<T> findById(long id) throws ServiceException {
-        log.debug("Start getPerson, Id: {}", id);
+        log.debug("Start getPerson");
         boolean success = true;
         try {
             return this.personRepository.findById(id);
         } catch (Exception e) {
             success = false;
-            log.error("Unable to getPerson, Id: {}, Exception: ", id, e);
+            log.error("Unable to getPerson, Exception: ", e);
             throw new ServiceException("Error getPerson", e);
         } finally {
-            log.debug("Finished getPerson, Id: {}, success: {}", id, success);
+            log.debug("Finished getPerson, success: {}", success);
         }
     }
 
     @Override
     public Optional<T> update(long id, T person) throws ServiceException {
-        log.debug("Start updatePerson Id: {}, Person: {}", id, person);
+        log.debug("Start updatePerson");
         boolean success = true;
         try {
             Optional<T> personOpt = this.personRepository.findById(id);
@@ -133,33 +135,46 @@ public abstract class AbstractPersonServiceImpl<T extends AbstractPerson, E exte
             return personOpt;
         } catch (IllegalArgumentException e) {
             success = false;
-            log.error("Unable to updatePerson Id: {}, Person: {}, Illegal Argument, Exception: ", id, person, e);
+            log.error("Unable to updatePerson, Illegal Argument, Exception: ", e);
             throw e;
         } catch (Exception e) {
             success = false;
-            log.error("Unable to updatePerson Id: {}, Person: {}, Exception: ", id, person, e);
+            log.error("Unable to updatePerson, Exception: ", e);
             throw new ServiceException("Error updatePerson", e);
         } finally {
-            log.debug("Finished updatePerson Id: {}, Person: {}, success: {}", id, person, success);
+            log.debug("Finished updatePerson, success: {}", success);
         }
     }
 
     @Override
     public Optional<T> delete(long id) throws ServiceException {
-        log.debug("Start deletePerson , Id: {}", id);
+        log.debug("Start deletePerson");
         boolean success = true;
         try {
             Optional<T> personOpt = this.personRepository.findById(id);
             if (personOpt.isPresent()) {
+                boolean booked = personOpt
+                        .map(AbstractPerson::getScheduleList)
+                        .orElseGet(ArrayList::new)
+                        .stream()
+                        .anyMatch(schedule -> schedule.getOwnedBooking() != null || schedule.getParentBooking() != null);
+
+                if(booked) {
+                    throw new NotModifiedException("Cannot delete with booked meeting");
+                }
                 this.personRepository.deleteById(id);
             }
             return personOpt;
+        } catch (NotModifiedException e) {
+            success = false;
+            log.error("Unable to deletePerson, Exception: ", e);
+            throw e;
         } catch (Exception e) {
             success = false;
-            log.error("Unable to deletePerson, Id: {}, Exception: ", id, e);
+            log.error("Unable to deletePerson, Exception: ", e);
             throw new ServiceException("Error deletePerson", e);
         } finally {
-            log.debug("Finished deletePerson, Id: {}, success: {}", id, success);
+            log.debug("Finished deletePerson, success: {}", success);
         }
     }
 

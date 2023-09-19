@@ -1,6 +1,6 @@
 package com.tamanna.challenge.interview.calendar.services;
 
-import com.tamanna.challenge.interview.calendar.entities.Schedule;
+import com.tamanna.challenge.interview.calendar.entities.jpa.Schedule;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 
 import java.util.List;

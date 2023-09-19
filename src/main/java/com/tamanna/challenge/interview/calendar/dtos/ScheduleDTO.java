@@ -10,4 +10,5 @@ import lombok.EqualsAndHashCode;
 @Data
 public class ScheduleDTO extends ScheduleInfoDTO {
     private long id;
+    private boolean booked;
 }

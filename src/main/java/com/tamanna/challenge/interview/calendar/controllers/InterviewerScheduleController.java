@@ -3,9 +3,10 @@ package com.tamanna.challenge.interview.calendar.controllers;
 import com.tamanna.challenge.interview.calendar.dtos.BaseResponse;
 import com.tamanna.challenge.interview.calendar.dtos.ScheduleDTO;
 import com.tamanna.challenge.interview.calendar.dtos.ScheduleInfoDTO;
-import com.tamanna.challenge.interview.calendar.entities.Schedule;
+import com.tamanna.challenge.interview.calendar.entities.jpa.Schedule;
 import com.tamanna.challenge.interview.calendar.exceptions.NotFoundException;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
+import com.tamanna.challenge.interview.calendar.logging.MDCLogging;
 import com.tamanna.challenge.interview.calendar.services.InterviewerScheduleService;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -38,12 +39,14 @@ public class InterviewerScheduleController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<BaseResponse<ScheduleDTO>> createSchedule(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id,
                                                                     @Valid @RequestBody ScheduleInfoDTO scheduleInfoDTO) throws ServiceException {
+        MDCLogging.putObjectMDC("createInterviewerSchedule{id[%s]}", id);
         Schedule schedule = personScheduleService.addSchedule(id, this.mapDTOEntity(scheduleInfoDTO));
         return buildResponse(mapEntityDTO(schedule), HttpStatus.CREATED);
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<BaseResponse<List<ScheduleDTO>>> listSchedules(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id) throws ServiceException {
+        MDCLogging.putObjectMDC("listInterviewerSchedule{id[%s]}", id);
         List<Schedule> schedules = personScheduleService.findAll(id);
         return buildResponse(mapListEntityDTO(schedules), schedules.isEmpty() ? HttpStatus.NO_CONTENT : HttpStatus.OK);
     }
@@ -51,6 +54,7 @@ public class InterviewerScheduleController {
     @GetMapping(path = "/{scheduleId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<BaseResponse<ScheduleDTO>> getSchedule(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id,
                                                                  @Min(value = 1, message = INVALID_SCHEDULE_ID_MESSAGE) @PathVariable(value = SCHEDULE_ID_PATH_VARIABLE) long scheduleId) throws ServiceException {
+        MDCLogging.putObjectMDC("getInterviewerSchedule{id[%s];scheduleId[%s]}", id, scheduleId);
         Optional<Schedule> scheduleOpt = personScheduleService.findById(id, scheduleId);
         return handleOptResponse(scheduleOpt);
     }
@@ -59,6 +63,7 @@ public class InterviewerScheduleController {
     public ResponseEntity<BaseResponse<ScheduleDTO>> putSchedule(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id,
                                                                  @Min(value = 1, message = INVALID_SCHEDULE_ID_MESSAGE) @PathVariable(value = SCHEDULE_ID_PATH_VARIABLE) long scheduleId,
                                                                  @Valid  @RequestBody ScheduleInfoDTO scheduleInfoDTO) throws ServiceException {
+        MDCLogging.putObjectMDC("putInterviewerSchedule{id[%s];scheduleId[%s]}", id, scheduleId);
         Optional<Schedule> scheduleOpt = personScheduleService.update(id, scheduleId, mapDTOEntity(scheduleInfoDTO));
         return handleOptResponse(scheduleOpt);
     }
@@ -66,6 +71,7 @@ public class InterviewerScheduleController {
     @DeleteMapping(path = "/{scheduleId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<BaseResponse<ScheduleDTO>> deleteSchedule(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id,
                                                                     @Min(value = 1, message = INVALID_SCHEDULE_ID_MESSAGE) @PathVariable(value = SCHEDULE_ID_PATH_VARIABLE) long scheduleId) throws ServiceException {
+        MDCLogging.putObjectMDC("deleteInterviewerSchedule{id[%s];scheduleId[%s]}", id, scheduleId);
         Optional<Schedule> scheduleOpt = personScheduleService.delete(id, scheduleId);
         return handleOptResponse(scheduleOpt);
     }

@@ -1,9 +1,10 @@
 package com.tamanna.challenge.interview.calendar.services.impl;
 
-import com.tamanna.challenge.interview.calendar.entities.AbstractPerson;
-import com.tamanna.challenge.interview.calendar.entities.Schedule;
+import com.tamanna.challenge.interview.calendar.entities.jpa.AbstractPerson;
+import com.tamanna.challenge.interview.calendar.entities.jpa.Schedule;
 import com.tamanna.challenge.interview.calendar.entities.enums.PersonType;
 import com.tamanna.challenge.interview.calendar.exceptions.NotFoundException;
+import com.tamanna.challenge.interview.calendar.exceptions.NotModifiedException;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import com.tamanna.challenge.interview.calendar.repositories.ScheduleRepository;
 import com.tamanna.challenge.interview.calendar.services.PersonScheduleService;
@@ -27,7 +28,7 @@ public abstract class AbstractPersonScheduleServiceImpl<T extends AbstractPerson
 
     @Override
     public Schedule addSchedule(long personId, Schedule schedule) throws ServiceException {
-        log.debug("Start addSchedule {} to Person PersonType: {}, Id: {}", schedule, personType, personId);
+        log.debug("Start addSchedule {}", personType);
         boolean success = true;
         try {
             T person = getPerson(personId);
@@ -43,68 +44,69 @@ public abstract class AbstractPersonScheduleServiceImpl<T extends AbstractPerson
             return scheduleRepository.save(schedule);
         } catch (NotFoundException | IllegalArgumentException | ServiceException e) {
             success = false;
-            log.error("Unable to addSchedule {} to Person PersonType: {}, Id: {}, Exception: ", schedule, personType, personId, e);
+            log.error("Unable to addSchedule {}, Exception: ", personType, e);
             throw e;
         } catch (Exception e) {
             success = false;
-            log.error("Unable to addSchedule {} to Person PersonType: {}, Id: {}, Exception: ", schedule, personType, personId, e);
+            log.error("Unable to addSchedule {}, Exception: ", personType, e);
             throw new ServiceException("Error addSchedule", e);
         } finally {
-            log.debug("Finished addSchedule {} to Person PersonType: {}, Id: {}, success: {}", schedule, personType, personId, success);
+            log.debug("Finished addSchedule {}, success: {}", personType, success);
         }
     }
 
     @Override
     public List<Schedule> findAll(long personId) throws ServiceException {
-        log.debug("Start getSchedules All from Person PersonType: {}, Id: {}", personType, personId);
+        log.debug("Start getSchedules All {}", personType);
         boolean success = true;
         try {
             T person = getPerson(personId);
             return person.getScheduleList() == null ? new ArrayList<>() : person.getScheduleList();
         } catch (NotFoundException | IllegalArgumentException | ServiceException e) {
             success = false;
-            log.error("Unable to getSchedules All from Person PersonType: {}, Id: {}, Illegal Argument, Exception: ", personType, personId, e);
+            log.error("Unable to getSchedules All {}, Illegal Argument, Exception: ", personType, e);
             throw e;
         } catch (Exception e) {
             success = false;
-            log.error("Unable to getSchedules All from Person PersonType: {}, Id: {}, Exception: ", personType, personId, e);
-            throw new ServiceException("Error getSchedule", e);
+            log.error("Unable to getSchedules All {}, Exception: ", personType, e);
+            throw new ServiceException("Error getSchedules All", e);
         } finally {
-            log.debug("Finished getSchedules All from Person PersonType: {}, Id: {}, success: {}", personType, personId, success);
+            log.debug("Finished getSchedules All {}, success: {}", personType, success);
         }
     }
 
     private T getPerson(long personId) throws ServiceException {
         return personService
                 .findById(personId)
-                .orElseThrow(() -> new NotFoundException(String.format("Unable to find %s with Id %s", personType, personId)));
+                .orElseThrow(()
+                        -> new NotFoundException(String.format("Unable to find %s with Id %s", personType, personId)));
     }
 
     @Override
     public Optional<Schedule> findById(long personId, long scheduleId) throws ServiceException {
-        log.debug("Start getSchedule ScheduleId: {} from Person PersonType: {}, Id: {}", scheduleId, personType, personId);
+        log.debug("Start getSchedule {}", personType);
         boolean success = true;
         try {
-            return scheduleRepository.findByIdAndPersonIdAndPersonType(scheduleId, personId, personType);
+            return scheduleRepository.findByIdAndPersonIdAndPersonType(scheduleId, personId, personType.name());
         } catch (IllegalArgumentException e) {
             success = false;
-            log.error("Unable to getSchedule ScheduleId: {} from Person PersonType: {}, Id: {}, Illegal Argument, Exception: ", scheduleId, personType, personId, e);
+            log.error("Unable to getSchedule {}, Illegal Argument, Exception: ", personType, e);
             throw e;
         } catch (Exception e) {
             success = false;
-            log.error("Unable to getSchedule ScheduleId: {} from Person PersonType: {}, Id: {}, Exception: ", scheduleId, personType, personId, e);
+            log.error("Unable to getSchedule {}, Exception: ", personType, e);
             throw new ServiceException("Error getSchedule", e);
         } finally {
-            log.debug("Finished getSchedule ScheduleId: {} from Person PersonType: {}, Id: {}, success: {}", scheduleId, personType, personId, success);
+            log.debug("Finished getSchedule {}, success: {}", personType, success);
         }
     }
 
     @Override
     public Optional<Schedule> update(long personId, long scheduleId, Schedule schedule) throws ServiceException {
-        log.debug("Start updateSchedule ScheduleId: {}, Schedule:{} from Person PersonType: {}, Id: {}", scheduleId, schedule, personType, personId);
+        log.debug("Start updateSchedule {}", personType);
         boolean success = true;
         try {
-            Optional<Schedule> scheduleOpt = scheduleRepository.findByIdAndPersonIdAndPersonType(scheduleId, personId, personType);
+            Optional<Schedule> scheduleOpt = scheduleRepository.findByIdAndPersonIdAndPersonType(scheduleId, personId, personType.name());
             if (scheduleOpt.isPresent()) {
                 schedule.setId(scheduleId);
                 validateScheduleUniqueness(personId, schedule);
@@ -113,33 +115,43 @@ public abstract class AbstractPersonScheduleServiceImpl<T extends AbstractPerson
             return scheduleOpt;
         } catch (IllegalArgumentException e) {
             success = false;
-            log.error("Unable to updateSchedule ScheduleId: {}, Schedule:{} from Person PersonType: {}, Id: {}, Illegal Argument, Exception: ", scheduleId, schedule, personType, personId, e);
+            log.error("Unable to updateSchedule {}, Illegal Argument, Exception: ", personType, e);
             throw e;
         } catch (Exception e) {
             success = false;
-            log.error("Unable to updateSchedule ScheduleId: {}, Schedule:{} from Person PersonType: {}, Id: {}, Exception: ", scheduleId, schedule, personType, personId, e);
+            log.error("Unable to updateSchedule {}, Exception: ", personType, e);
             throw new ServiceException("Error updateSchedule", e);
         } finally {
-            log.debug("Finished updateSchedule ScheduleId: {}, Schedule:{} from Person PersonType: {}, Id: {}, success: {}", scheduleId, schedule, personType, personId, success);
+            log.debug("Finished updateSchedule {}, success: {}", personType, success);
         }
     }
 
     @Override
     public Optional<Schedule> delete(long personId, long scheduleId) throws ServiceException {
-        log.debug("Start deleteSchedule ScheduleId: {} from Person PersonType: {}, Id: {}", scheduleId, personType, personId);
+        log.debug("Start deleteSchedule {}", personType);
         boolean success = true;
         try {
-            Optional<Schedule> scheduleOpt = scheduleRepository.findByIdAndPersonIdAndPersonType(scheduleId, personId, personType);
+            Optional<Schedule> scheduleOpt = scheduleRepository.findByIdAndPersonIdAndPersonType(scheduleId, personId, personType.name());
             if (scheduleOpt.isPresent()) {
+                boolean booked = scheduleOpt
+                        .filter(schedule -> schedule.getOwnedBooking() != null || schedule.getParentBooking() != null)
+                        .isPresent();
+                if(booked) {
+                    throw new NotModifiedException("Cannot delete with booked meeting");
+                }
                 this.scheduleRepository.deleteById(scheduleId);
             }
             return scheduleOpt;
+        } catch (NotModifiedException e) {
+            success = false;
+            log.error("Unable to deleteSchedule {}, Exception: ", personType, e);
+            throw e;
         } catch (Exception e) {
             success = false;
-            log.error("Unable to deleteSchedule ScheduleId: {} from Person PersonType: {}, Id: {}, Exception: ", scheduleId, personType, personId, e);
-            throw new ServiceException("Error updateSchedule", e);
+            log.error("Unable to deleteSchedule {}, Exception: ", personType, e);
+            throw new ServiceException("Error deleteSchedule", e);
         } finally {
-            log.debug("Finished deleteSchedule ScheduleId: {} from Person PersonType: {}, Id: {}, success: {}", scheduleId, personType, personId, success);
+            log.debug("Finished deleteSchedule {}, success: {}", personType, success);
         }
     }
 

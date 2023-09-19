@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tamanna.challenge.interview.calendar.dtos.BaseResponse;
 import com.tamanna.challenge.interview.calendar.dtos.PersonDTO;
-import com.tamanna.challenge.interview.calendar.entities.Candidate;
+import com.tamanna.challenge.interview.calendar.entities.jpa.Candidate;
 import com.tamanna.challenge.interview.calendar.entities.enums.PersonType;
 import com.tamanna.challenge.interview.calendar.repositories.CandidateRepository;
 import org.junit.jupiter.api.Assertions;
@@ -18,7 +18,6 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import static com.tamanna.challenge.interview.calendar.DummyDataUtils.getNewPersonCandidate;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * @author tlferreira

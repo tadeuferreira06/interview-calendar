@@ -6,6 +6,9 @@ import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * @author tlferreira
+ */
 public interface PersonService<T extends AbstractPerson> {
     T createPerson(T person) throws ServiceException;
 

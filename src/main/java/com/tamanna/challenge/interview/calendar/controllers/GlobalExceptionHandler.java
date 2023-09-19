@@ -8,6 +8,7 @@ import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingPathVariableException;
@@ -74,6 +75,12 @@ public class GlobalExceptionHandler {
         String errorMessage = "Error while validating method params";
         log.error(errorMessage, exception);
         return buildResponse(HttpStatus.BAD_REQUEST, errorMessage, errors);
+    }
+
+    @ExceptionHandler
+    @ResponseBody
+    public <T> ResponseEntity<BaseResponse<T>> handleAccessDeniedException(AccessDeniedException exception) {
+        return buildResponse(HttpStatus.FORBIDDEN, HttpStatus.FORBIDDEN.getReasonPhrase());
     }
 
     @ExceptionHandler

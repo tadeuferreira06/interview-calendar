@@ -8,7 +8,9 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.Optional;
-
+/**
+ * @author tlferreira
+ */
 @Repository
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 

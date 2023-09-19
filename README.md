@@ -2,7 +2,7 @@
 
 ## Summary
 
-This is a basic API to schedule meetings between Candidates and Interviewers.
+This is a basic API to book meetings between Candidates and Interviewers.
 
 To start, create the necessary Candidates and Interviewers. For each one, add schedules (Day and Hour of availability).
 Query, for meetings and book them.

@@ -90,13 +90,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler
     @ResponseBody
-    public <T> ResponseEntity<BaseResponse<T>> handleServiceException(ServiceException exception) {
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
+    public <T> ResponseEntity<BaseResponse<T>> handleIllegalArgumentException(IllegalArgumentException exception) {
+        return buildResponse(HttpStatus.BAD_REQUEST, exception.getMessage());
     }
 
     @ExceptionHandler
     @ResponseBody
-    public <T> ResponseEntity<BaseResponse<T>> handleIllegalArgumentException(IllegalArgumentException exception) {
+    public <T> ResponseEntity<BaseResponse<T>> handleServiceException(ServiceException exception) {
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
     }
 

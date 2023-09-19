@@ -15,6 +15,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -45,7 +46,7 @@ public class MeetingServiceImpl implements MeetingService {
             List<Interviewer> interviewerList = getInterviewers(interviewerIdList);
 
             return getAvailableInterviewerList(candidateScheduleList, interviewerList);
-        } catch (NotFoundException | IllegalArgumentException e) {
+        } catch (NotFoundException | IllegalArgumentException | ServiceException e) {
             success = false;
             log.error("Unable to queryMeeting, Exception: ", e);
             throw e;
@@ -95,7 +96,7 @@ public class MeetingServiceImpl implements MeetingService {
             scheduleRepository.saveAll(schedulesToSave);
 
             return savedBooking;
-        } catch (NotFoundException | NotModifiedException | IllegalArgumentException e) {
+        } catch (NotFoundException | NotModifiedException | IllegalArgumentException | ServiceException e) {
             success = false;
             log.error("Unable to bookMeeting, Exception: ", e);
             throw e;
@@ -223,7 +224,7 @@ public class MeetingServiceImpl implements MeetingService {
     }
 
     private Predicate<Schedule> getPredicateSchedule(LocalDate day, int hour) {
-        return (schedule) -> schedule.getDay().equals(day) && schedule.getHour() == hour;
+        return schedule -> schedule.getDay().equals(day) && schedule.getHour() == hour;
     }
 
     private List<Schedule> getCandidateSchedules(long candidateId) throws ServiceException {
@@ -231,12 +232,25 @@ public class MeetingServiceImpl implements MeetingService {
                 .findById(candidateId)
                 .orElseThrow(() -> new NotFoundException("Unable to find candidate"));
 
-        return Optional
+        LocalDateTime now = LocalDateTime.now();
+
+        List<Schedule> schedules = Optional
                 .of(candidate)
                 .filter(c -> c.getScheduleList() != null && !c.getScheduleList().isEmpty())
                 .map(AbstractPerson::getScheduleList)
                 .map(this::filterBookedSchedules)
                 .orElseThrow(() -> new ServiceException("Candidate without schedules"));
+
+        schedules = schedules
+                .stream()
+                .filter(schedule -> schedule.getDay().atTime(schedule.getHour(), 0).compareTo(now) > 0)
+                .toList();
+
+        if(schedules.isEmpty()){
+            throw new ServiceException("Candidate without valid schedule");
+        }
+
+        return schedules;
     }
 
     private List<Interviewer> getInterviewers(List<Long> interviewerIdList) throws ServiceException {

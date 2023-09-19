@@ -1,11 +1,15 @@
 package com.tamanna.challenge.interview.calendar.controllers;
 
+import com.tamanna.challenge.interview.calendar.dtos.ApiError;
+import com.tamanna.challenge.interview.calendar.dtos.BaseResponse;
+import com.tamanna.challenge.interview.calendar.exceptions.NotFoundException;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
+import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.MissingRequestHeaderException;
@@ -16,7 +20,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
-import java.util.stream.Collectors;
+import java.util.List;
+
+import static com.tamanna.challenge.interview.calendar.controllers.ControllerUtils.buildResponse;
 
 /**
  * @author tlferreira
@@ -27,71 +33,73 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
     @ExceptionHandler
     @ResponseBody
-    public ResponseEntity<String> handleMissingPathVariableException(MissingPathVariableException exception) {
-        return validationErrorBuilder(exception, "Missing Parameter: " + exception.getParameter());
+    public ResponseEntity<BaseResponse<List<ApiError>>> handleMissingPathVariableException(MissingPathVariableException exception) {
+        return validationErrorBuilder(exception, List.of(ApiError.builder().parameter(exception.getParameter().toString()).message("Missing Parameter").build()));
     }
 
     @ExceptionHandler
     @ResponseBody
-    public ResponseEntity<String> handleMissingServletRequestParameterException(MissingServletRequestParameterException exception) {
-        return validationErrorBuilder(exception, "Missing Parameter: " + exception.getParameterName());
+    public ResponseEntity<BaseResponse<List<ApiError>>> handleMissingServletRequestParameterException(MissingServletRequestParameterException exception) {
+        return validationErrorBuilder(exception, List.of(ApiError.builder().parameter(exception.getParameterName()).message("Missing Parameter").build()));
     }
 
     @ExceptionHandler
     @ResponseBody
-    public ResponseEntity<String> handleMissingRequestHeaderException(MissingRequestHeaderException exception) {
-        return validationErrorBuilder(exception, "Missing Header: " + exception.getHeaderName());
+    public ResponseEntity<BaseResponse<List<ApiError>>> handleMissingRequestHeaderException(MissingRequestHeaderException exception) {
+        return validationErrorBuilder(exception, List.of(ApiError.builder().parameter(exception.getHeaderName()).message("Missing Header").build()));
     }
 
     @ExceptionHandler
     @ResponseBody
-    public ResponseEntity<String> handleConstraintViolationException(ConstraintViolationException exception) {
-        String errors = exception
+    public ResponseEntity<BaseResponse<List<ApiError>>> handleConstraintViolationException(ConstraintViolationException exception) {
+        List<ApiError> errors = exception
                 .getConstraintViolations()
                 .stream()
-                .map(ConstraintViolation::getMessage)
-                .collect(Collectors.joining(", "));
+                .map(constraintViolation -> ApiError.builder().message(constraintViolation.getMessage()).build())
+                .toList();
         return validationErrorBuilder(exception, errors);
     }
 
     @ExceptionHandler
     @ResponseBody
-    public ResponseEntity<String> handleConstraintViolationException(MethodArgumentNotValidException exception) {
-        String errors = exception
-                .getBindingResult()
+    public ResponseEntity<BaseResponse<List<ApiError>>> handleConstraintViolationException(MethodArgumentNotValidException exception) {
+        List<ApiError> errors = exception
                 .getFieldErrors()
                 .stream()
-                .map(fieldError -> String.format("%s: %s", fieldError.getField(), fieldError.getDefaultMessage()))
-                .collect(Collectors.joining(", "));
+                .map(fieldError -> ApiError.builder().parameter(fieldError.getField()).message(fieldError.getDefaultMessage()).build())
+                .toList();
         return validationErrorBuilder(exception, errors);
     }
 
-    private ResponseEntity<String> validationErrorBuilder(Exception exception, String errors) {
-        String errorMessage = "Error while validating method params: " + exception.getMessage();
-        log.error(errorMessage);
-        String message = "Validation Error";
-        if (StringUtils.hasText(errors)) {
-            message += ": " + errors;
-        }
-        return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
+    private ResponseEntity<BaseResponse<List<ApiError>>> validationErrorBuilder(Exception exception, List<ApiError> errors) {
+        String errorMessage = "Error while validating method params";
+        log.error(errorMessage, exception);
+        return buildResponse(HttpStatus.BAD_REQUEST, errorMessage, errors);
     }
 
     @ExceptionHandler
     @ResponseBody
-    public ResponseEntity<String> handleException(ServiceException exception) {
-        return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    public <T> ResponseEntity<BaseResponse<T>> handleNotFoundException(NotFoundException exception) {
+        return buildResponse(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 
     @ExceptionHandler
     @ResponseBody
-    public ResponseEntity<String> handleException(IllegalArgumentException exception) {
-        return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    public <T> ResponseEntity<BaseResponse<T>> handleServiceException(ServiceException exception) {
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
     }
 
     @ExceptionHandler
     @ResponseBody
-    public ResponseEntity<String> handleException(Exception exception) {
+    public <T> ResponseEntity<BaseResponse<T>> handleIllegalArgumentException(IllegalArgumentException exception) {
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseBody
+    public <T> ResponseEntity<BaseResponse<T>> handleException(Exception exception) {
         log.error("Internal Server Error, Exception: ", exception);
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
 }

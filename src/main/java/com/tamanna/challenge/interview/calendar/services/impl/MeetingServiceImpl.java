@@ -1,9 +1,7 @@
 package com.tamanna.challenge.interview.calendar.services.impl;
 
-import com.tamanna.challenge.interview.calendar.entities.AvailableMeeting;
-import com.tamanna.challenge.interview.calendar.entities.AbstractPerson;
-import com.tamanna.challenge.interview.calendar.entities.Interviewer;
-import com.tamanna.challenge.interview.calendar.entities.Schedule;
+import com.tamanna.challenge.interview.calendar.entities.*;
+import com.tamanna.challenge.interview.calendar.exceptions.NotFoundException;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import com.tamanna.challenge.interview.calendar.services.CandidateService;
 import com.tamanna.challenge.interview.calendar.services.InterviewerService;
@@ -15,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -36,9 +35,9 @@ public class MeetingServiceImpl implements MeetingService {
             List<Interviewer> interviewerList = getInterviewers(interviewerIdList);
 
             return getAvailableInterviewerList(candidateScheduleList, interviewerList);
-        } catch (IllegalArgumentException e) {
+        } catch (NotFoundException | IllegalArgumentException e) {
             success = false;
-            log.error("Unable to query meeting candidate: {}, interviewers:{}, Illegal Argument, Exception: ", candidateId, listToString(interviewerIdList), e);
+            log.error("Unable to query meeting candidate: {}, interviewers:{}, Exception: ", candidateId, listToString(interviewerIdList), e);
             throw e;
         } catch (Exception e) {
             success = false;
@@ -68,14 +67,27 @@ public class MeetingServiceImpl implements MeetingService {
     }
 
     private List<Schedule> getCandidateSchedules(long candidateId) throws ServiceException {
-        return candidateService
+        Candidate candidate = candidateService
                 .findById(candidateId)
+                .orElseThrow(() -> new NotFoundException("Unable to find candidate"));
+
+        return Optional
+                .of(candidate)
+                .filter(c -> c.getScheduleList() != null && !c.getScheduleList().isEmpty())
                 .map(AbstractPerson::getScheduleList)
-                .orElseThrow(() -> new ServiceException("Unable to find available schedules for candidate"));
+                .orElseThrow(() -> new ServiceException("Candidate without schedules"));
     }
 
     private List<Interviewer> getInterviewers(List<Long> interviewerIdList) throws ServiceException {
-        return  interviewerService.findAll(interviewerIdList);
+        List<Interviewer> interviewerList = interviewerService
+                .findAll(interviewerIdList)
+                .stream()
+                .filter(interviewer -> interviewer.getScheduleList() != null && !interviewer.getScheduleList().isEmpty())
+                .toList();
+        if(interviewerList.isEmpty()){
+            throw new ServiceException("No available interviewer");
+        }
+        return interviewerList;
     }
 
     private String listToString(List<?> list) {

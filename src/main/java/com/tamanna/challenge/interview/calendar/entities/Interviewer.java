@@ -11,4 +11,5 @@ import javax.persistence.Entity;
 @Entity
 @DiscriminatorValue(PersonType.Values.INTERVIEWER)
 public class Interviewer extends AbstractPerson {
+
 }

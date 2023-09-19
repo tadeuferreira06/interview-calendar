@@ -11,16 +11,62 @@ http://localhost:9001/h2-console
 Use the correct url and credentials that are in: ``application.properties``
 
 ## Run Application
-TODO
 
-## How to Use - Person CRUD
+### Requirements to Run
+
+* Java 17
+* Maven
+* Docker?
+
+### Build Project
+
+```
+mvn clean package
+```
+
+### Run Project
+
+#### Using Maven
+```
+mvn spring-boot:run
+```
+
+#### Using Java Directly
+```
+java -jar target/interview-calendar-*.jar
+```
+## How to Use
+
+### Swagger-UI
+
+Open the following link to access the Swagger-UI:
+
+```
+http://localhost:8080/swagger-ui/index.html
+```
+
+### Query Meeting
+The meeting is done based on the candidate's schedules and the service will match them with available interviewers. 
+You must provide a ``candidateId`` and a list of ``interviewerId``
+
+To query a meeting use one of the following curls:
+
+```
+curl 'localhost:8080/meetings?candidateId=3&interviewerId=1%2C2'
+```
+```
+curl 'localhost:8080/meetings?candidateId=3&interviewerId=1&interviewerId=2'
+```
+
+
+### Person CRUD
 Candidates and Interviewers supports all the same operations, The following examples will use the ``interviewers`` as an example. 
 
 The available request paths are:
 * {hostname}:{port}/candidates
 * {hostname}:{port}/interviewer
 
-### Create
+#### Create
 To create a new person, use the following curl:
 
 Request:
@@ -46,7 +92,7 @@ Response:
 }
 ```
 
-### Read - List
+#### Read - List
 To list the available people, use the following curl:
 
 Use ``page`` and ``size`` query parameters to customize the search.
@@ -78,7 +124,7 @@ Response:
 ]
 ```
 
-### Read - Get
+#### Read - Get
 Request:
 ```
 curl 'localhost:8080/interviewers/1'
@@ -95,7 +141,7 @@ Response:
 }
 ```
 
-### Update
+#### Update
 To update a person, use the following curl:
 
 Request:
@@ -121,7 +167,7 @@ Response:
 }
 ```
 
-### Delete
+#### Delete
 To update a person, use the following curl:
 
 Request:
@@ -143,14 +189,14 @@ Response:
 }
 ```
 
-## How to Use - Schedules CRUD
+### Schedules CRUD
 Candidates and Interviewers supports all the same operations, The following examples will use the ``interviewers`` as an example.
 
 The available request paths are:
 * {hostname}:{port}/candidates/{id}/schedules
 * {hostname}:{port}/interviewer/{id}/schedules
 
-### Create
+#### Create
 To create a new person, use the following curl:
 
 Request:
@@ -172,7 +218,7 @@ Response:
 
 ```
 
-### Read
+#### Read
 To list the available schedules of a given person, use the following curl:
 
 Request:
@@ -194,7 +240,7 @@ Response:
     }
 ]
 ```
-### Read - Get
+#### Read - Get
 Request:
 ```
 curl 'localhost:8080/interviewers/2/schedules/3'
@@ -214,7 +260,7 @@ Response:
     }
 ]
 ```
-### Update
+#### Update
 To update a person's schedule, use the following curl:
 
 Request:
@@ -235,7 +281,7 @@ Response:
 }
 ```
 
-### Delete
+#### Delete
 To update a person, use the following curl:
 
 Request:

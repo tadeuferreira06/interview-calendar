@@ -3,7 +3,6 @@ package com.tamanna.challenge.interview.calendar.dtos;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.http.HttpStatus;
 
 /**
  * @author tlferreira

@@ -4,7 +4,6 @@ import lombok.Data;
 import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.FutureOrPresent;
-import javax.validation.constraints.Size;
 import java.time.LocalDate;
 
 /**

@@ -3,13 +3,12 @@ package com.tamanna.challenge.interview.calendar.controllers;
 import com.tamanna.challenge.interview.calendar.dtos.ApiError;
 import com.tamanna.challenge.interview.calendar.dtos.BaseResponse;
 import com.tamanna.challenge.interview.calendar.exceptions.NotFoundException;
+import com.tamanna.challenge.interview.calendar.exceptions.NotModifiedException;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.FieldError;
-import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.MissingRequestHeaderException;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.util.List;
 
@@ -82,6 +80,12 @@ public class GlobalExceptionHandler {
     @ResponseBody
     public <T> ResponseEntity<BaseResponse<T>> handleNotFoundException(NotFoundException exception) {
         return buildResponse(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseBody
+    public <T> ResponseEntity<BaseResponse<T>> handleServiceException(NotModifiedException exception) {
+        return buildResponse(HttpStatus.NOT_MODIFIED, exception.getMessage());
     }
 
     @ExceptionHandler

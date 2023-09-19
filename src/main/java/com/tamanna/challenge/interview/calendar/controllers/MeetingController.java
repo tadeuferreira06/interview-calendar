@@ -3,10 +3,8 @@ package com.tamanna.challenge.interview.calendar.controllers;
 import com.tamanna.challenge.interview.calendar.dtos.AvailableMeetingDTO;
 import com.tamanna.challenge.interview.calendar.dtos.BaseResponse;
 import com.tamanna.challenge.interview.calendar.dtos.BookingDTO;
-import com.tamanna.challenge.interview.calendar.dtos.PersonDTO;
 import com.tamanna.challenge.interview.calendar.entities.AvailableMeeting;
 import com.tamanna.challenge.interview.calendar.entities.jpa.Booking;
-import com.tamanna.challenge.interview.calendar.entities.jpa.Candidate;
 import com.tamanna.challenge.interview.calendar.exceptions.NotFoundException;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import com.tamanna.challenge.interview.calendar.logging.MDCLogging;
@@ -22,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,9 +41,9 @@ public class MeetingController {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<BaseResponse<List<AvailableMeetingDTO>>> query(@Min(value = 1, message = INVALID_ID_MESSAGE) @RequestParam(CANDIDATE_ID_REQ_PARAM) long candidateId,
-                                                                         @NotEmpty @RequestParam(INTERVIEWER_ID_REQ_PARAM) List<Long> interviewerIdList) throws ServiceException {
+                                                                         @RequestParam(value = INTERVIEWER_ID_REQ_PARAM, required = false) List<Long> interviewerIdList) throws ServiceException {
         MDCLogging.putObjectMDC("queryMeeting{candidateId[%s],interviewerId:[%s]}", candidateId, listToString(interviewerIdList));
-        List<AvailableMeeting> availableMeetings = this.meetingService.queryMeeting(candidateId, interviewerIdList);
+        List<AvailableMeeting> availableMeetings = this.meetingService.queryMeeting(candidateId, Optional.ofNullable(interviewerIdList).orElseGet(ArrayList::new));
         return buildResponse(mapListEntityDTO(availableMeetings), availableMeetings.isEmpty() ? HttpStatus.NO_CONTENT : HttpStatus.OK);
     }
 

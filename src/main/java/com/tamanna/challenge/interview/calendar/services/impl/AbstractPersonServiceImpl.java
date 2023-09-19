@@ -4,6 +4,7 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.tamanna.challenge.interview.calendar.configurations.PhoneNumberValidationKeys;
 import com.tamanna.challenge.interview.calendar.entities.jpa.AbstractPerson;
+import com.tamanna.challenge.interview.calendar.exceptions.NotModifiedException;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import com.tamanna.challenge.interview.calendar.repositories.PersonRepository;
 import com.tamanna.challenge.interview.calendar.services.PersonService;
@@ -22,7 +23,7 @@ import java.util.Optional;
  */
 @Log4j2
 @AllArgsConstructor
-public abstract class AbstractPersonServiceImpl<T extends AbstractPerson, E extends PersonRepository<T>> implements PersonService <T> {
+public abstract class AbstractPersonServiceImpl<T extends AbstractPerson, E extends PersonRepository<T>> implements PersonService<T> {
     private final E personRepository;
     private final PhoneNumberValidationKeys phoneNumberValidationKeys;
 
@@ -152,9 +153,22 @@ public abstract class AbstractPersonServiceImpl<T extends AbstractPerson, E exte
         try {
             Optional<T> personOpt = this.personRepository.findById(id);
             if (personOpt.isPresent()) {
+                boolean booked = personOpt
+                        .map(AbstractPerson::getScheduleList)
+                        .orElseGet(ArrayList::new)
+                        .stream()
+                        .anyMatch(schedule -> schedule.getOwnedBooking() != null || schedule.getParentBooking() != null);
+
+                if(booked) {
+                    throw new NotModifiedException("Cannot delete with booked meeting");
+                }
                 this.personRepository.deleteById(id);
             }
             return personOpt;
+        } catch (NotModifiedException e) {
+            success = false;
+            log.error("Unable to deletePerson, Exception: ", e);
+            throw e;
         } catch (Exception e) {
             success = false;
             log.error("Unable to deletePerson, Exception: ", e);

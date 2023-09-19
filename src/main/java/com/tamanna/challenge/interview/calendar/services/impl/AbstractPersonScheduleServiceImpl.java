@@ -4,6 +4,7 @@ import com.tamanna.challenge.interview.calendar.entities.jpa.AbstractPerson;
 import com.tamanna.challenge.interview.calendar.entities.jpa.Schedule;
 import com.tamanna.challenge.interview.calendar.entities.enums.PersonType;
 import com.tamanna.challenge.interview.calendar.exceptions.NotFoundException;
+import com.tamanna.challenge.interview.calendar.exceptions.NotModifiedException;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import com.tamanna.challenge.interview.calendar.repositories.ScheduleRepository;
 import com.tamanna.challenge.interview.calendar.services.PersonScheduleService;
@@ -86,7 +87,7 @@ public abstract class AbstractPersonScheduleServiceImpl<T extends AbstractPerson
         log.debug("Start getSchedule {}", personType);
         boolean success = true;
         try {
-            return scheduleRepository.findByIdAndPersonIdAndPersonType(scheduleId, personId, personType);
+            return scheduleRepository.findByIdAndPersonIdAndPersonType(scheduleId, personId, personType.name());
         } catch (IllegalArgumentException e) {
             success = false;
             log.error("Unable to getSchedule {}, Illegal Argument, Exception: ", personType, e);
@@ -105,7 +106,7 @@ public abstract class AbstractPersonScheduleServiceImpl<T extends AbstractPerson
         log.debug("Start updateSchedule {}", personType);
         boolean success = true;
         try {
-            Optional<Schedule> scheduleOpt = scheduleRepository.findByIdAndPersonIdAndPersonType(scheduleId, personId, personType);
+            Optional<Schedule> scheduleOpt = scheduleRepository.findByIdAndPersonIdAndPersonType(scheduleId, personId, personType.name());
             if (scheduleOpt.isPresent()) {
                 schedule.setId(scheduleId);
                 validateScheduleUniqueness(personId, schedule);
@@ -130,11 +131,21 @@ public abstract class AbstractPersonScheduleServiceImpl<T extends AbstractPerson
         log.debug("Start deleteSchedule {}", personType);
         boolean success = true;
         try {
-            Optional<Schedule> scheduleOpt = scheduleRepository.findByIdAndPersonIdAndPersonType(scheduleId, personId, personType);
+            Optional<Schedule> scheduleOpt = scheduleRepository.findByIdAndPersonIdAndPersonType(scheduleId, personId, personType.name());
             if (scheduleOpt.isPresent()) {
+                boolean booked = scheduleOpt
+                        .filter(schedule -> schedule.getOwnedBooking() != null || schedule.getParentBooking() != null)
+                        .isPresent();
+                if(booked) {
+                    throw new NotModifiedException("Cannot delete with booked meeting");
+                }
                 this.scheduleRepository.deleteById(scheduleId);
             }
             return scheduleOpt;
+        } catch (NotModifiedException e) {
+            success = false;
+            log.error("Unable to deleteSchedule {}, Exception: ", personType, e);
+            throw e;
         } catch (Exception e) {
             success = false;
             log.error("Unable to deleteSchedule {}, Exception: ", personType, e);

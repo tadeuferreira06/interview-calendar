@@ -71,7 +71,7 @@ public class MeetingServiceImpl implements MeetingService {
                     .findFirst()
                     .orElseThrow(() -> new NotFoundException("Unable to find available meeting"));
 
-            if (availableMeeting.getInterviewerList().size() != interviewerIdList.size()) {
+            if (availableMeeting.getInterviewerList().size() < interviewerIdList.size()) {
                 throw new ServiceException(String.format("Not all Interviewers are available, Requested:[%s], Available:[%s]",
                         listToString(interviewerIdList),
                         listPersonToIdString(availableMeeting.getInterviewerList())));
@@ -84,9 +84,8 @@ public class MeetingServiceImpl implements MeetingService {
             booking.setChildrenScheduleList(getInterviewersSchedules(availableMeeting));
 
             Booking savedBooking = bookingRepository.save(booking);
-            List<Schedule> schedulesToSave = new ArrayList<>();
 
-            schedulesToSave.addAll(savedBooking.getChildrenScheduleList());
+            List<Schedule> schedulesToSave = new ArrayList<>(savedBooking.getChildrenScheduleList());
             schedulesToSave.forEach(schedule -> schedule.setParentBooking(savedBooking));
 
             savedBooking.getOwnerSchedule().setOwnedBooking(savedBooking);
@@ -244,8 +243,16 @@ public class MeetingServiceImpl implements MeetingService {
     }
 
     private List<Interviewer> getInterviewers(List<Long> interviewerIdList) throws ServiceException {
-        List<Interviewer> interviewerList = interviewerService
-                .findAll(interviewerIdList)
+        List<Interviewer> interviewerList = new ArrayList<>();
+
+        if(interviewerIdList.isEmpty()){
+            log.debug("No interviewerIdList, going to fetch all");
+            interviewerList.addAll(interviewerService.findAll());
+        } else {
+            interviewerList.addAll(interviewerService.findAll(interviewerIdList));
+        }
+
+        interviewerList = interviewerList
                 .stream()
                 .filter(interviewer -> interviewer.getScheduleList() != null && !interviewer.getScheduleList().isEmpty())
                 .toList();

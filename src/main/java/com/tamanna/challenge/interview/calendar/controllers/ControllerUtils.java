@@ -4,6 +4,10 @@ import com.tamanna.challenge.interview.calendar.dtos.BaseResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 /**
  * @author tlferreira
  */
@@ -34,6 +38,17 @@ public class ControllerUtils {
                 .response(responseObject)
                 .build(),
                 status);
+    }
+
+    public static String listToString(List<?> list) {
+        if (list != null) {
+            return list
+                    .stream()
+                    .filter(Objects::nonNull)
+                    .map(Object::toString)
+                    .collect(Collectors.joining(","));
+        }
+        return "";
     }
 
 }

@@ -12,9 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * @author tlferreira
@@ -28,7 +26,7 @@ public class MeetingServiceImpl implements MeetingService {
 
     @Override
     public List<AvailableMeeting> queryMeeting(long candidateId, List<Long> interviewerIdList) throws ServiceException {
-        log.debug("Start query meeting for candidate: {}, interviewers:{}", candidateId, listToString(interviewerIdList));
+        log.debug("Start queryMeeting");
         boolean success = true;
         try {
             List<Schedule> candidateScheduleList = getCandidateSchedules(candidateId);
@@ -37,14 +35,14 @@ public class MeetingServiceImpl implements MeetingService {
             return getAvailableInterviewerList(candidateScheduleList, interviewerList);
         } catch (NotFoundException | IllegalArgumentException e) {
             success = false;
-            log.error("Unable to query meeting candidate: {}, interviewers:{}, Exception: ", candidateId, listToString(interviewerIdList), e);
+            log.error("Unable to queryMeeting, Exception: ", e);
             throw e;
         } catch (Exception e) {
             success = false;
-            log.error("Unable to query meeting candidate: {}, interviewers:{}, Exception: ", candidateId, listToString(interviewerIdList), e);
+            log.error("Unable to queryMeeting, Exception: ", e);
             throw new ServiceException("Error creating person", e);
         } finally {
-            log.debug("Finished query meeting candidate: {}, interviewers:{}, success: {}", candidateId, listToString(interviewerIdList), success);
+            log.debug("Finished queryMeeting, success: {}", success);
         }
     }
 
@@ -89,16 +87,4 @@ public class MeetingServiceImpl implements MeetingService {
         }
         return interviewerList;
     }
-
-    private String listToString(List<?> list) {
-        if (list != null) {
-            return list
-                    .stream()
-                    .filter(Objects::nonNull)
-                    .map(Object::toString)
-                    .collect(Collectors.joining(","));
-        }
-        return "";
-    }
-
 }

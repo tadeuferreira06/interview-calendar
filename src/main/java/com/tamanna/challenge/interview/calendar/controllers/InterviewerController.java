@@ -8,6 +8,10 @@ import com.tamanna.challenge.interview.calendar.exceptions.NotFoundException;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import com.tamanna.challenge.interview.calendar.logging.MDCLogging;
 import com.tamanna.challenge.interview.calendar.services.InterviewerService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
@@ -37,6 +41,22 @@ public class InterviewerController {
     private final InterviewerService interviewerService;
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Create a new Interviewer",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Successful Create"),
+                    @ApiResponse(responseCode = "400",
+                            description = "Bad Request",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = BaseResponse.class))
+                    ),
+                    @ApiResponse(responseCode = "500",
+                            description = "Internal Server Error",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = BaseResponse.class))
+                    ),
+            })
     public ResponseEntity<BaseResponse<PersonDTO>> createPerson(@Valid @RequestBody PersonInfoDTO personInfoDTO) throws ServiceException {
         MDCLogging.putObjectMDC("createInterviewer{}");
         Interviewer entity = interviewerService.createPerson(mapDTOEntity(personInfoDTO));
@@ -44,6 +64,23 @@ public class InterviewerController {
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get All Interviewers",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Successful Get"),
+                    @ApiResponse(responseCode = "204", description = "No Content"),
+                    @ApiResponse(responseCode = "400",
+                            description = "Bad Request",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = BaseResponse.class))
+                    ),
+                    @ApiResponse(responseCode = "500",
+                            description = "Internal Server Error",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = BaseResponse.class))
+                    ),
+            })
     public ResponseEntity<BaseResponse<List<PersonDTO>>> listPerson(@Min(value = 0, message = INVALID_PAGE_MESSAGE) @RequestParam(value = PAGE_PARAM, defaultValue = PAGE_DEFAULT) int page,
                                                                     @Min(value = 1, message = INVALID_SIZE_MESSAGE) @RequestParam(value = SIZE_PARAM, required = false) Integer size) throws ServiceException {
         MDCLogging.putObjectMDC("listInterviewer{Page[%s];Size[%s]}", page, size);
@@ -52,6 +89,28 @@ public class InterviewerController {
     }
 
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get Interviewer by id",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Successful Get"),
+                    @ApiResponse(responseCode = "400",
+                            description = "Bad Request",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = BaseResponse.class))
+                    ),
+                    @ApiResponse(responseCode = "404",
+                            description = "Not Found",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = BaseResponse.class))
+                    ),
+                    @ApiResponse(responseCode = "500",
+                            description = "Internal Server Error",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = BaseResponse.class))
+                    ),
+            })
     public ResponseEntity<BaseResponse<PersonDTO>> getPerson(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id) throws ServiceException {
         MDCLogging.putObjectMDC("getInterviewer{id[%s]}", id);
         Optional<Interviewer> entityOpt = interviewerService.findById(id);
@@ -59,6 +118,28 @@ public class InterviewerController {
     }
 
     @PutMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Update Interviewer by id",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Successful Update"),
+                    @ApiResponse(responseCode = "400",
+                            description = "Bad Request",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = BaseResponse.class))
+                    ),
+                    @ApiResponse(responseCode = "404",
+                            description = "Not Found",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = BaseResponse.class))
+                    ),
+                    @ApiResponse(responseCode = "500",
+                            description = "Internal Server Error",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = BaseResponse.class))
+                    ),
+            })
     public ResponseEntity<BaseResponse<PersonDTO>> putPerson(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id,
                                                              @Valid @RequestBody PersonInfoDTO personInfoDTO) throws ServiceException {
         MDCLogging.putObjectMDC("putInterviewer{id[%s]}", id);
@@ -67,6 +148,34 @@ public class InterviewerController {
     }
 
     @DeleteMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Delete Interviewer by id",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Successful Delete"),
+                    @ApiResponse(responseCode = "304",
+                            description = "Not Modified",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = BaseResponse.class))
+                    ),
+                    @ApiResponse(responseCode = "400",
+                            description = "Bad Request",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = BaseResponse.class))
+                    ),
+                    @ApiResponse(responseCode = "404",
+                            description = "Not Found",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = BaseResponse.class))
+                    ),
+                    @ApiResponse(responseCode = "500",
+                            description = "Internal Server Error",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = BaseResponse.class))
+                    ),
+            })
     public ResponseEntity<BaseResponse<PersonDTO>> deletePerson(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id) throws ServiceException {
         MDCLogging.putObjectMDC("deleteInterviewer{id[%s]}", id);
         Optional<Interviewer> entityOpt = interviewerService.delete(id);

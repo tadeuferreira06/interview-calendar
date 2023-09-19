@@ -92,7 +92,7 @@ public class DummyDataUtils {
         schedule.setHour(hour);
 
         if (date == null) {
-            date = LocalDate.of(2023, 9, 15);
+            date = LocalDate.now().plusDays(1);
         }
         schedule.setDay(date);
 

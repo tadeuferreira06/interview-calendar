@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 public class BookingDTO {
     private long id;
-    private ScheduleDTO scheduleDTO;
+    private ScheduleDTO candidateSchedule;
     private PersonDTO candidate;
     private List<PersonDTO> interviewerList;
 }

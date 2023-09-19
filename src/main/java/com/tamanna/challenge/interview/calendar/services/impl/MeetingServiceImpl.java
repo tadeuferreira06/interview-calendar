@@ -3,6 +3,7 @@ package com.tamanna.challenge.interview.calendar.services.impl;
 import com.tamanna.challenge.interview.calendar.entities.AvailableMeeting;
 import com.tamanna.challenge.interview.calendar.entities.jpa.*;
 import com.tamanna.challenge.interview.calendar.exceptions.NotFoundException;
+import com.tamanna.challenge.interview.calendar.exceptions.NotModifiedException;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import com.tamanna.challenge.interview.calendar.repositories.BookingRepository;
 import com.tamanna.challenge.interview.calendar.repositories.ScheduleRepository;
@@ -14,6 +15,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -44,7 +46,7 @@ public class MeetingServiceImpl implements MeetingService {
             List<Interviewer> interviewerList = getInterviewers(interviewerIdList);
 
             return getAvailableInterviewerList(candidateScheduleList, interviewerList);
-        } catch (NotFoundException | IllegalArgumentException e) {
+        } catch (NotFoundException | IllegalArgumentException | ServiceException e) {
             success = false;
             log.error("Unable to queryMeeting, Exception: ", e);
             throw e;
@@ -72,7 +74,7 @@ public class MeetingServiceImpl implements MeetingService {
                     .orElseThrow(() -> new NotFoundException("Unable to find available meeting"));
 
             if (availableMeeting.getInterviewerList().size() < interviewerIdList.size()) {
-                throw new ServiceException(String.format("Not all Interviewers are available, Requested:[%s], Available:[%s]",
+                throw new NotModifiedException(String.format("Not all Interviewers are available, Requested:[%s], Available:[%s]",
                         listToString(interviewerIdList),
                         listPersonToIdString(availableMeeting.getInterviewerList())));
             }
@@ -94,7 +96,7 @@ public class MeetingServiceImpl implements MeetingService {
             scheduleRepository.saveAll(schedulesToSave);
 
             return savedBooking;
-        } catch (NotFoundException | IllegalArgumentException e) {
+        } catch (NotFoundException | NotModifiedException | IllegalArgumentException | ServiceException e) {
             success = false;
             log.error("Unable to bookMeeting, Exception: ", e);
             throw e;
@@ -176,10 +178,6 @@ public class MeetingServiceImpl implements MeetingService {
                 bookingList.addAll(bookingRepository.findByChildrenScheduleListPersonId(personId));
             }
             return bookingList;
-        } catch (IllegalArgumentException e) {
-            success = false;
-            log.error("Unable to getPersonMeeting, Exception: ", e);
-            throw e;
         } catch (Exception e) {
             success = false;
             log.error("Unable to getPersonMeeting, Exception: ", e);
@@ -226,7 +224,7 @@ public class MeetingServiceImpl implements MeetingService {
     }
 
     private Predicate<Schedule> getPredicateSchedule(LocalDate day, int hour) {
-        return (schedule) -> schedule.getDay().equals(day) && schedule.getHour() == hour;
+        return schedule -> schedule.getDay().equals(day) && schedule.getHour() == hour;
     }
 
     private List<Schedule> getCandidateSchedules(long candidateId) throws ServiceException {
@@ -234,12 +232,25 @@ public class MeetingServiceImpl implements MeetingService {
                 .findById(candidateId)
                 .orElseThrow(() -> new NotFoundException("Unable to find candidate"));
 
-        return Optional
+        LocalDateTime now = LocalDateTime.now();
+
+        List<Schedule> schedules = Optional
                 .of(candidate)
                 .filter(c -> c.getScheduleList() != null && !c.getScheduleList().isEmpty())
                 .map(AbstractPerson::getScheduleList)
                 .map(this::filterBookedSchedules)
                 .orElseThrow(() -> new ServiceException("Candidate without schedules"));
+
+        schedules = schedules
+                .stream()
+                .filter(schedule -> schedule.getDay().atTime(schedule.getHour(), 0).compareTo(now) > 0)
+                .toList();
+
+        if(schedules.isEmpty()){
+            throw new ServiceException("Candidate without valid schedule");
+        }
+
+        return schedules;
     }
 
     private List<Interviewer> getInterviewers(List<Long> interviewerIdList) throws ServiceException {

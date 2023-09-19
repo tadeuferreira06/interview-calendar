@@ -12,6 +12,8 @@ import com.tamanna.challenge.interview.calendar.services.PersonService;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +35,7 @@ public abstract class AbstractPersonScheduleServiceImpl<T extends AbstractPerson
         try {
             T person = getPerson(personId);
 
+            validateScheduleDay(schedule);
             validateScheduleUniqueness(person.getId(), schedule);
 
             if (person.getScheduleList() == null) {
@@ -168,6 +171,13 @@ public abstract class AbstractPersonScheduleServiceImpl<T extends AbstractPerson
 
         if (invalid) {
             throw new IllegalArgumentException("Schedule already exists");
+        }
+    }
+
+    private void validateScheduleDay(Schedule schedule) {
+        LocalDateTime now = LocalDateTime.now();
+        if (schedule.getDay().atTime(schedule.getHour(), 0).compareTo(now) <= 0) {
+            throw new IllegalArgumentException("Schedule must have a date in the future");
         }
     }
 }

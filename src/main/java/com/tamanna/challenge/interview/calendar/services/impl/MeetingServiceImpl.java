@@ -3,6 +3,7 @@ package com.tamanna.challenge.interview.calendar.services.impl;
 import com.tamanna.challenge.interview.calendar.entities.AvailableMeeting;
 import com.tamanna.challenge.interview.calendar.entities.jpa.*;
 import com.tamanna.challenge.interview.calendar.exceptions.NotFoundException;
+import com.tamanna.challenge.interview.calendar.exceptions.NotModifiedException;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import com.tamanna.challenge.interview.calendar.repositories.BookingRepository;
 import com.tamanna.challenge.interview.calendar.repositories.ScheduleRepository;
@@ -72,7 +73,7 @@ public class MeetingServiceImpl implements MeetingService {
                     .orElseThrow(() -> new NotFoundException("Unable to find available meeting"));
 
             if (availableMeeting.getInterviewerList().size() < interviewerIdList.size()) {
-                throw new ServiceException(String.format("Not all Interviewers are available, Requested:[%s], Available:[%s]",
+                throw new NotModifiedException(String.format("Not all Interviewers are available, Requested:[%s], Available:[%s]",
                         listToString(interviewerIdList),
                         listPersonToIdString(availableMeeting.getInterviewerList())));
             }
@@ -94,7 +95,7 @@ public class MeetingServiceImpl implements MeetingService {
             scheduleRepository.saveAll(schedulesToSave);
 
             return savedBooking;
-        } catch (NotFoundException | IllegalArgumentException e) {
+        } catch (NotFoundException | NotModifiedException | IllegalArgumentException e) {
             success = false;
             log.error("Unable to bookMeeting, Exception: ", e);
             throw e;
@@ -176,10 +177,6 @@ public class MeetingServiceImpl implements MeetingService {
                 bookingList.addAll(bookingRepository.findByChildrenScheduleListPersonId(personId));
             }
             return bookingList;
-        } catch (IllegalArgumentException e) {
-            success = false;
-            log.error("Unable to getPersonMeeting, Exception: ", e);
-            throw e;
         } catch (Exception e) {
             success = false;
             log.error("Unable to getPersonMeeting, Exception: ", e);

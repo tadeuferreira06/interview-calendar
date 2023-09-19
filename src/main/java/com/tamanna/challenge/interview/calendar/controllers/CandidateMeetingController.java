@@ -6,6 +6,10 @@ import com.tamanna.challenge.interview.calendar.entities.jpa.Booking;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import com.tamanna.challenge.interview.calendar.logging.MDCLogging;
 import com.tamanna.challenge.interview.calendar.services.MeetingService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
@@ -37,7 +41,24 @@ public class CandidateMeetingController {
     private final MeetingService meetingService;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<BaseResponse<List<BookingDTO>>> listSchedules(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id) throws ServiceException {
+    @Operation(summary = "List Candidate Meetings",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Successful Get"),
+                    @ApiResponse(responseCode = "204", description = "No Content"),
+                    @ApiResponse(responseCode = "400",
+                            description = "Bad Request",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = BaseResponse.class))
+                    ),
+                    @ApiResponse(responseCode = "500",
+                            description = "Internal Server Error",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = BaseResponse.class))
+                    ),
+            })
+    public ResponseEntity<BaseResponse<List<BookingDTO>>> listMeetings(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id) throws ServiceException {
         MDCLogging.putObjectMDC("listCandidateMeetings{id[%s]}", id);
         List<Booking> meetings = meetingService.getCandidateMeetings(id);
         return buildResponse(mapListEntityDTO(meetings), meetings.isEmpty() ? HttpStatus.NO_CONTENT : HttpStatus.OK);

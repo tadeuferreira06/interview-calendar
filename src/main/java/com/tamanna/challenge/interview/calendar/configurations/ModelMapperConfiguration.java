@@ -62,7 +62,7 @@ public class ModelMapperConfiguration {
 
         modelMapper
                 .createTypeMap(Booking.class, BookingDTO.class)
-                .addMapping(Booking::getOwnerSchedule, BookingDTO::setScheduleDTO)
+                .addMapping(Booking::getOwnerSchedule, BookingDTO::setCandidateSchedule)
                 .addMapping(src -> src.getOwnerSchedule().getPerson(), BookingDTO::setCandidate)
                 .addMappings(mapper -> mapper.using(interviewerConverter).map(Booking::getChildrenScheduleList, BookingDTO::setInterviewerList));
 

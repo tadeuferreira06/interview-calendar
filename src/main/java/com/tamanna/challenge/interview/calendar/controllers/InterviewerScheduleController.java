@@ -12,12 +12,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +28,8 @@ import javax.validation.constraints.Min;
 import java.util.List;
 import java.util.Optional;
 
+import static com.tamanna.challenge.interview.calendar.configurations.OpenApiConfiguration.SECURITY_SCHEMA_NAME;
+import static com.tamanna.challenge.interview.calendar.configurations.WebSecurityConfiguration.HAS_INTERVIEWER_ROLE;
 import static com.tamanna.challenge.interview.calendar.controllers.ControllerConstants.*;
 import static com.tamanna.challenge.interview.calendar.controllers.ControllerUtils.buildResponse;
 
@@ -36,6 +40,8 @@ import static com.tamanna.challenge.interview.calendar.controllers.ControllerUti
 @RequestMapping("/interviewers/{id}/schedules")
 @AllArgsConstructor
 @Validated
+@PreAuthorize(HAS_INTERVIEWER_ROLE)
+@SecurityRequirement(name = SECURITY_SCHEMA_NAME)
 public class InterviewerScheduleController {
     private final ModelMapper modelMapper;
     private final InterviewerScheduleService personScheduleService;
@@ -143,7 +149,7 @@ public class InterviewerScheduleController {
             })
     public ResponseEntity<BaseResponse<ScheduleDTO>> putSchedule(@Min(value = 1, message = INVALID_ID_MESSAGE) @PathVariable(value = ID_PATH_VARIABLE) long id,
                                                                  @Min(value = 1, message = INVALID_SCHEDULE_ID_MESSAGE) @PathVariable(value = SCHEDULE_ID_PATH_VARIABLE) long scheduleId,
-                                                                 @Valid  @RequestBody ScheduleInfoDTO scheduleInfoDTO) throws ServiceException {
+                                                                 @Valid @RequestBody ScheduleInfoDTO scheduleInfoDTO) throws ServiceException {
         MDCLogging.putObjectMDC("putInterviewerSchedule{id[%s];scheduleId[%s]}", id, scheduleId);
         Optional<Schedule> scheduleOpt = personScheduleService.update(id, scheduleId, mapDTOEntity(scheduleInfoDTO));
         return handleOptResponse(scheduleOpt);

@@ -1,8 +1,8 @@
 package com.tamanna.challenge.interview.calendar.services.impl;
 
+import com.tamanna.challenge.interview.calendar.entities.enums.PersonType;
 import com.tamanna.challenge.interview.calendar.entities.jpa.AbstractPerson;
 import com.tamanna.challenge.interview.calendar.entities.jpa.Schedule;
-import com.tamanna.challenge.interview.calendar.entities.enums.PersonType;
 import com.tamanna.challenge.interview.calendar.exceptions.NotFoundException;
 import com.tamanna.challenge.interview.calendar.exceptions.NotModifiedException;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
@@ -12,7 +12,6 @@ import com.tamanna.challenge.interview.calendar.services.PersonService;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -139,7 +138,7 @@ public abstract class AbstractPersonScheduleServiceImpl<T extends AbstractPerson
                 boolean booked = scheduleOpt
                         .filter(schedule -> schedule.getOwnedBooking() != null || schedule.getParentBooking() != null)
                         .isPresent();
-                if(booked) {
+                if (booked) {
                     throw new NotModifiedException("Cannot delete with booked meeting");
                 }
                 this.scheduleRepository.deleteById(scheduleId);

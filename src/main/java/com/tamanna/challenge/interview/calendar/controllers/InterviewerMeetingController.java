@@ -10,12 +10,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.constraints.Min;
 import java.util.List;
 
+import static com.tamanna.challenge.interview.calendar.configurations.OpenApiConfiguration.SECURITY_SCHEMA_NAME;
+import static com.tamanna.challenge.interview.calendar.configurations.WebSecurityConfiguration.HAS_INTERVIEWER_ROLE;
 import static com.tamanna.challenge.interview.calendar.controllers.ControllerConstants.ID_PATH_VARIABLE;
 import static com.tamanna.challenge.interview.calendar.controllers.ControllerConstants.INVALID_ID_MESSAGE;
 import static com.tamanna.challenge.interview.calendar.controllers.ControllerUtils.buildResponse;
@@ -36,6 +40,8 @@ import static com.tamanna.challenge.interview.calendar.controllers.ControllerUti
 @RequestMapping("/interviewers/{id}/meetings")
 @AllArgsConstructor
 @Validated
+@PreAuthorize(HAS_INTERVIEWER_ROLE)
+@SecurityRequirement(name = SECURITY_SCHEMA_NAME)
 public class InterviewerMeetingController {
     private final ModelMapper modelMapper;
     private final MeetingService meetingService;

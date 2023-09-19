@@ -3,7 +3,7 @@ package com.tamanna.challenge.interview.calendar.controllers;
 import com.tamanna.challenge.interview.calendar.dtos.BaseResponse;
 import com.tamanna.challenge.interview.calendar.dtos.PersonDTO;
 import com.tamanna.challenge.interview.calendar.dtos.PersonInfoDTO;
-import com.tamanna.challenge.interview.calendar.entities.Interviewer;
+import com.tamanna.challenge.interview.calendar.entities.jpa.Interviewer;
 import com.tamanna.challenge.interview.calendar.exceptions.NotFoundException;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import com.tamanna.challenge.interview.calendar.logging.MDCLogging;

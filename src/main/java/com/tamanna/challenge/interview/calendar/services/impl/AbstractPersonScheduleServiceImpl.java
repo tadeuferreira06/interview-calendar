@@ -1,7 +1,7 @@
 package com.tamanna.challenge.interview.calendar.services.impl;
 
-import com.tamanna.challenge.interview.calendar.entities.AbstractPerson;
-import com.tamanna.challenge.interview.calendar.entities.Schedule;
+import com.tamanna.challenge.interview.calendar.entities.jpa.AbstractPerson;
+import com.tamanna.challenge.interview.calendar.entities.jpa.Schedule;
 import com.tamanna.challenge.interview.calendar.entities.enums.PersonType;
 import com.tamanna.challenge.interview.calendar.exceptions.NotFoundException;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
@@ -68,7 +68,7 @@ public abstract class AbstractPersonScheduleServiceImpl<T extends AbstractPerson
         } catch (Exception e) {
             success = false;
             log.error("Unable to getSchedules All {}, Exception: ", personType, e);
-            throw new ServiceException("Error getSchedule", e);
+            throw new ServiceException("Error getSchedules All", e);
         } finally {
             log.debug("Finished getSchedules All {}, success: {}", personType, success);
         }
@@ -138,7 +138,7 @@ public abstract class AbstractPersonScheduleServiceImpl<T extends AbstractPerson
         } catch (Exception e) {
             success = false;
             log.error("Unable to deleteSchedule {}, Exception: ", personType, e);
-            throw new ServiceException("Error updateSchedule", e);
+            throw new ServiceException("Error deleteSchedule", e);
         } finally {
             log.debug("Finished deleteSchedule {}, success: {}", personType, success);
         }

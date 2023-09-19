@@ -1,4 +1,4 @@
-package com.tamanna.challenge.interview.calendar.entities;
+package com.tamanna.challenge.interview.calendar.entities.jpa;
 
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -42,4 +42,11 @@ public class Schedule {
     @ManyToOne
     @JoinColumn
     private AbstractPerson person;
+
+    @OneToOne
+    private Booking ownedBooking;
+
+    @ManyToOne
+    @JoinColumn
+    private Booking parentBooking;
 }

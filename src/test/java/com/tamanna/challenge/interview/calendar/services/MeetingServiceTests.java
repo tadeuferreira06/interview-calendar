@@ -1,9 +1,9 @@
 package com.tamanna.challenge.interview.calendar.services;
 
 import com.tamanna.challenge.interview.calendar.entities.AvailableMeeting;
-import com.tamanna.challenge.interview.calendar.entities.Candidate;
-import com.tamanna.challenge.interview.calendar.entities.Interviewer;
-import com.tamanna.challenge.interview.calendar.entities.Schedule;
+import com.tamanna.challenge.interview.calendar.entities.jpa.Candidate;
+import com.tamanna.challenge.interview.calendar.entities.jpa.Interviewer;
+import com.tamanna.challenge.interview.calendar.entities.jpa.Schedule;
 import com.tamanna.challenge.interview.calendar.exceptions.NotFoundException;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import com.tamanna.challenge.interview.calendar.services.impl.MeetingServiceImpl;

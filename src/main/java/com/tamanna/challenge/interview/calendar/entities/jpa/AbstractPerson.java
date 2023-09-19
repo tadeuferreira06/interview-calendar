@@ -1,6 +1,5 @@
-package com.tamanna.challenge.interview.calendar.entities;
+package com.tamanna.challenge.interview.calendar.entities.jpa;
 
-import com.tamanna.challenge.interview.calendar.entities.enums.PersonType;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;

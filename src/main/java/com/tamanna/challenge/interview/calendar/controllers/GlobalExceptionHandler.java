@@ -27,7 +27,8 @@ import static com.tamanna.challenge.interview.calendar.controllers.ControllerUti
 /**
  * @author tlferreira
  */
-@ControllerAdvice(assignableTypes = {InterviewerController.class, InterviewerScheduleController.class, CandidateController.class, CandidateScheduleController.class, MeetingController.class})
+@ControllerAdvice(assignableTypes = {InterviewerController.class, InterviewerScheduleController.class, CandidateController.class,
+        CandidateScheduleController.class, MeetingController.class, CandidateMeetingController.class, InterviewerMeetingController.class})
 @Component
 @Log4j2
 public class GlobalExceptionHandler {

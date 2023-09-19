@@ -1,7 +1,7 @@
 package com.tamanna.challenge.interview.calendar.services.impl;
 
 import com.tamanna.challenge.interview.calendar.configurations.PhoneNumberValidationKeys;
-import com.tamanna.challenge.interview.calendar.entities.Candidate;
+import com.tamanna.challenge.interview.calendar.entities.jpa.Candidate;
 import com.tamanna.challenge.interview.calendar.repositories.CandidateRepository;
 import com.tamanna.challenge.interview.calendar.services.CandidateService;
 import lombok.extern.log4j.Log4j2;

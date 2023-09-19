@@ -1,7 +1,7 @@
 package com.tamanna.challenge.interview.calendar.repositories;
 
 
-import com.tamanna.challenge.interview.calendar.entities.Schedule;
+import com.tamanna.challenge.interview.calendar.entities.jpa.Schedule;
 import com.tamanna.challenge.interview.calendar.entities.enums.PersonType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

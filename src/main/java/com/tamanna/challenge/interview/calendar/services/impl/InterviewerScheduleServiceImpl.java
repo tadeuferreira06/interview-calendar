@@ -1,6 +1,6 @@
 package com.tamanna.challenge.interview.calendar.services.impl;
 
-import com.tamanna.challenge.interview.calendar.entities.Interviewer;
+import com.tamanna.challenge.interview.calendar.entities.jpa.Interviewer;
 import com.tamanna.challenge.interview.calendar.entities.enums.PersonType;
 import com.tamanna.challenge.interview.calendar.repositories.ScheduleRepository;
 import com.tamanna.challenge.interview.calendar.services.InterviewerScheduleService;

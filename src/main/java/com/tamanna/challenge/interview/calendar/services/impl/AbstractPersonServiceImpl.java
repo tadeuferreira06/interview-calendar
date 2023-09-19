@@ -3,7 +3,7 @@ package com.tamanna.challenge.interview.calendar.services.impl;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.tamanna.challenge.interview.calendar.configurations.PhoneNumberValidationKeys;
-import com.tamanna.challenge.interview.calendar.entities.AbstractPerson;
+import com.tamanna.challenge.interview.calendar.entities.jpa.AbstractPerson;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import com.tamanna.challenge.interview.calendar.repositories.PersonRepository;
 import com.tamanna.challenge.interview.calendar.services.PersonService;
@@ -43,7 +43,7 @@ public abstract class AbstractPersonServiceImpl<T extends AbstractPerson, E exte
         } catch (Exception e) {
             success = false;
             log.error("Unable to createPerson, Exception: ", e);
-            throw new ServiceException("Error creating person", e);
+            throw new ServiceException("Error creatingPerson", e);
         } finally {
             log.debug("Finished creatingPerson, success: {}", success);
         }

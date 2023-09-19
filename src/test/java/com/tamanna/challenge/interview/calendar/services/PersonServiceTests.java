@@ -1,8 +1,8 @@
 package com.tamanna.challenge.interview.calendar.services;
 
 import com.tamanna.challenge.interview.calendar.configurations.PhoneNumberValidationKeys;
-import com.tamanna.challenge.interview.calendar.entities.AbstractPerson;
-import com.tamanna.challenge.interview.calendar.entities.Interviewer;
+import com.tamanna.challenge.interview.calendar.entities.jpa.AbstractPerson;
+import com.tamanna.challenge.interview.calendar.entities.jpa.Interviewer;
 import com.tamanna.challenge.interview.calendar.exceptions.ServiceException;
 import com.tamanna.challenge.interview.calendar.repositories.InterviewerRepository;
 import com.tamanna.challenge.interview.calendar.services.impl.InterviewerServiceImpl;

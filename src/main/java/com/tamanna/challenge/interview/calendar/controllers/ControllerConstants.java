@@ -17,6 +17,7 @@ public class ControllerConstants {
     public static final String SIZE_PARAM = "size";
     public static final String INTERVIEWER_NOT_FOUND = "Interviewer not found";
     public static final String CANDIDATE_NOT_FOUND = "Candidate not found";
+    public static final String MEETING_NOT_FOUND = "Meeting not found";
 
     private ControllerConstants() {
         //private constructor

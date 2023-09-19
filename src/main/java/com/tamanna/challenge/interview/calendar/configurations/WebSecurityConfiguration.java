@@ -27,6 +27,7 @@ public class WebSecurityConfiguration {
 
     private static final String[] SWAGGER_WHITELIST = new String[]{"/api-docs", "/api-docs.*", "/api-docs/*",
             "/v3/api-docs.*", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger.html"};
+    private static final String[] H_2_WHITELIST = new String[]{"/h2-console", "/h2-console/*", "/h2-console/**"};
 
     @Bean
     public InMemoryUserDetailsManager userDetailsService() {
@@ -58,11 +59,15 @@ public class WebSecurityConfiguration {
                 .and().authorizeRequests()
                 .antMatchers(HttpMethod.OPTIONS).permitAll()
                 .antMatchers(SWAGGER_WHITELIST).permitAll()
+                .antMatchers(H_2_WHITELIST).permitAll()
                 .antMatchers(HttpMethod.GET).authenticated()
                 .antMatchers(HttpMethod.POST).authenticated()
                 .antMatchers(HttpMethod.PUT).authenticated()
                 .antMatchers(HttpMethod.PATCH).authenticated()
                 .antMatchers(HttpMethod.DELETE).authenticated();
+    
+        http.csrf().ignoringAntMatchers(H_2_WHITELIST);
+        http.headers().frameOptions().disable();
 
         http.httpBasic();
 

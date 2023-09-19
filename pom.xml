@@ -111,6 +111,10 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <layers>
+                        <enabled>true</enabled>
+                    </layers>
+                    <imageName>tamanna/${project.artifactId}</imageName>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>

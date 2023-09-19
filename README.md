@@ -1,14 +1,11 @@
-# interview-calendar-api
+# Interview Calendar API
 
-## Database Access
+## Summary
 
-Use the following url to access the database console:
+This is a basic API to schedule meetings between Candidates and Interviewers.
 
-```
-http://localhost:9001/h2-console
-```
-
-Use the correct url and credentials that are in: ``application.properties``
+To start, create the necessary Candidates and Interviewers. For each one, add schedules (Day and Hour of availability).
+Query, for meetings and book them.
 
 ## Run Application
 
@@ -16,6 +13,7 @@ Use the correct url and credentials that are in: ``application.properties``
 
 * Java 17
 * Maven
+* Docker ``Optional``
 
 ### Build Project
 
@@ -37,12 +35,23 @@ mvn spring-boot:run
 java -jar target/interview-calendar-*.jar
 ```
 
-## Summary
+## Docker
 
-This is a basic API to schedule meetings between Candidates and Interviewers.
+### Build
 
-To start, create the necessary Candidates and Interviewers. For each one, add schedules (Day and Hour of availability).
-Query, for meetings and book them.
+Using Spring Boot built-in docker tool
+
+```
+mvn spring-boot:build-image
+```
+
+### Run
+
+Use ``-d`` to run in detached mode
+
+```
+docker run -d -p 8080:8080 tamanna/interview-calendar:latest
+```
 
 ## How to Use
 
@@ -64,8 +73,20 @@ Access to Candidates:
 Open the following link to access the Swagger-UI:
 
 ```
+
 http://localhost:8080/swagger-ui/index.html
+
 ```
+
+### Database Access
+
+Use the following url to access the database console:
+
+```
+http://localhost:9001/h2-console
+```
+
+Use the correct url and credentials that are in: ``application.properties``
 
 ### API Description
 
